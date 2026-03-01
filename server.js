@@ -30,10 +30,30 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(join(__dirname, 'public')));
 
-// Configure Multer to hold files in memory (RAM) instead of writing to disk
 const storage = multer.memoryStorage();
 const upload = multer({ storage, limits: { fileSize: 15 * 1024 * 1024 } });
 const uploadMusic = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
+
+const isProd = !!process.env.VERCEL || process.env.NODE_ENV === 'production';
+const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+
+// On Vercel (serverless), req.protocol may not reflect HTTPS correctly.
+// We must look at the x-forwarded-proto header instead.
+function isSecureRequest(req) {
+  if (!isProd) return false;
+  const proto = req.headers['x-forwarded-proto'];
+  return proto === 'https' || (typeof proto === 'string' && proto.split(',')[0].trim() === 'https');
+}
+
+function makeCookieOptions(req) {
+  return {
+    httpOnly: true,
+    sameSite: 'lax',
+    path: '/',
+    maxAge: COOKIE_MAX_AGE,
+    secure: isSecureRequest(req),
+  };
+}
 
 // --- Vercel KV Database Helpers ---
 async function getSession(token) {
@@ -116,7 +136,7 @@ app.post('/api/signup', async (req, res) => {
   await saveUser(lower, newUser);
   await setSession(token, lower);
 
-  res.cookie('token', token, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 });
+  res.cookie('token', token, makeCookieOptions(req));
   res.json({ success: true, username: lower });
 });
 
@@ -135,14 +155,39 @@ app.post('/api/login', async (req, res) => {
 
   const token = randomUUID();
   await setSession(token, lower);
-  res.cookie('token', token, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 });
+  res.cookie('token', token, makeCookieOptions(req));
   res.json({ success: true, username: lower });
 });
 
 app.post('/api/logout', async (req, res) => {
   await deleteSession(req.cookies?.token);
-  res.clearCookie('token');
+  res.clearCookie('token', { path: '/', sameSite: 'lax', secure: isSecureRequest(req) });
   res.json({ success: true });
+});
+
+app.get('/api/health', (req, res) => {
+  const missing = [];
+  if (!kvUrl) missing.push('UPSTASH_REDIS_REST_URL (or KV_REST_API_URL)');
+  if (!kvToken) missing.push('UPSTASH_REDIS_REST_TOKEN (or KV_REST_API_TOKEN)');
+  res.json({
+    ok: missing.length === 0,
+    kvConnected: !!(kvUrl && kvToken),
+    missing: missing.length ? missing : undefined,
+    hint: missing.length ? 'Go to Vercel dashboard → Storage → Connect Upstash Redis, then redeploy.' : undefined
+  });
+});
+
+// Temporary debug route — safe to leave in (shows no secrets)
+app.get('/api/debug-env', (req, res) => {
+  res.json({
+    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL ? '✅ set' : '❌ missing',
+    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN ? '✅ set' : '❌ missing',
+    KV_REST_API_URL: process.env.KV_REST_API_URL ? '✅ set' : '❌ missing',
+    KV_REST_API_TOKEN: process.env.KV_REST_API_TOKEN ? '✅ set' : '❌ missing',
+    BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN ? '✅ set' : '❌ missing',
+    NODE_ENV: process.env.NODE_ENV || '(not set)',
+    VERCEL: process.env.VERCEL || '(not set)',
+  });
 });
 
 app.get('/api/me', auth, async (req, res) => {
