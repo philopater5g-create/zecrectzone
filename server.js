@@ -13,8 +13,18 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SALT_ROUNDS = 10;
 
-// Initialize Redis directly
-const kv = Redis.fromEnv();
+// Initialize Redis directly, supporting both Upstash and Vercel KV environment variables
+const kvUrl = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
+const kvToken = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+
+let kv;
+if (kvUrl && kvToken) {
+  kv = new Redis({ url: kvUrl, token: kvToken });
+} else {
+  console.warn("WARNING: Redis environment variables are missing. Database calls will fail.");
+  // Create a dummy proxy so the app doesn't immediately crash on boot
+  kv = new Proxy({}, { get: () => async () => null });
+}
 
 app.use(express.json());
 app.use(cookieParser());
