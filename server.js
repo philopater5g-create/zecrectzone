@@ -98,6 +98,8 @@ async function auth(req, res, next) {
 
 // --- Routes ---
 app.post('/api/signup', async (req, res) => {
+  if (!kvUrl || !kvToken) return res.status(500).json({ error: 'Database is not connected! Please link Upstash Redis in your Vercel storage tab.' });
+
   const { username, password, displayName } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
 
@@ -119,6 +121,8 @@ app.post('/api/signup', async (req, res) => {
 });
 
 app.post('/api/login', async (req, res) => {
+  if (!kvUrl || !kvToken) return res.status(500).json({ error: 'Database is not connected! Please link Upstash Redis in your Vercel storage tab.' });
+
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
 
