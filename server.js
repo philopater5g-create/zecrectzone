@@ -269,7 +269,6 @@ async function handleUpload(req, res) {
         });
       }
       const blob = await put(filename, req.file.buffer, {
-        access: 'public',
         contentType: req.file.mimetype
       });
       res.json({ url: blob.url });
