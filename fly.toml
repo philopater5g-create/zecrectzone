@@ -1,0 +1,23 @@
+app = "profile-card-builder-app"
+primary_region = "iad"
+
+[build]
+
+[env]
+  PORT = "3000"
+
+[[mounts]]
+  source = "user_data"
+  destination = "/app/data"
+
+[[mounts]]
+  source = "user_uploads"
+  destination = "/app/uploads"
+
+[http_service]
+  internal_port = 3000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
