@@ -162,6 +162,31 @@ async function load() {
   container.appendChild(card);
   document.title = `${displayName} — Card.lol`;
 
+  // Apply page background
+  const profilePage = document.querySelector('.profile-page');
+  if (profilePage && p.pageBgUrl) {
+    const pageBgFull = fullUrl(p.pageBgUrl);
+    if (isVideoUrl(pageBgFull)) {
+      const video = document.createElement('video');
+      video.autoplay = true;
+      video.muted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.src = pageBgFull;
+      video.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;';
+      if (p.blurPageBg) video.style.filter = 'blur(12px)';
+      document.body.insertBefore(video, document.body.firstChild);
+    } else {
+      profilePage.style.backgroundImage = `url(${pageBgFull})`;
+      profilePage.style.backgroundSize = 'cover';
+      profilePage.style.backgroundPosition = 'center';
+      profilePage.style.backgroundAttachment = 'fixed';
+      if (p.blurPageBg) profilePage.style.filter = 'blur(12px)';
+    }
+  } else if (profilePage && p.pageBgColor) {
+    profilePage.style.backgroundColor = p.pageBgColor;
+  }
+
   const alreadyEntered = sessionStorage.getItem('profile_entered_' + slug);
 
   if (alreadyEntered) {
