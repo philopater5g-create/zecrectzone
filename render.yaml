@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: profile-card-builder
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+    # Note: On the free tier, Render does not support persistent disks (volumes)
+    # via the blueprint yaml directly. We will explain to the user that files
+    # might reset, or how to upgrade if they want persistence.
