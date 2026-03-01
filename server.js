@@ -38,10 +38,11 @@ const uploadMusic = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } });
 // --- Vercel KV Database Helpers ---
 async function getSession(token) {
   if (!token) return null;
-  return await kv.get(`session:${token}`);
+  const data = await kv.get(`session:${token}`);
+  return typeof data === 'string' ? JSON.parse(data) : data;
 }
 async function setSession(token, username) {
-  await kv.set(`session:${token}`, { username }, { ex: 7 * 24 * 60 * 60 });
+  await kv.set(`session:${token}`, JSON.stringify({ username }), { ex: 7 * 24 * 60 * 60 });
 }
 async function deleteSession(token) {
   if (!token) return;
@@ -49,17 +50,19 @@ async function deleteSession(token) {
 }
 
 async function getUser(username) {
-  return await kv.get(`user:${username}`);
+  const data = await kv.get(`user:${username}`);
+  return typeof data === 'string' ? JSON.parse(data) : data;
 }
 async function saveUser(username, userData) {
-  await kv.set(`user:${username}`, userData);
+  await kv.set(`user:${username}`, JSON.stringify(userData));
   if (userData.profile?.customLink) {
     const slug = userData.profile.customLink.toLowerCase().replace(/\s/g, '');
     await kv.set(`slug:${slug}`, username);
   }
 }
 async function userExists(username) {
-  return (await kv.exists(`user:${username}`)) === 1;
+  const exists = await kv.exists(`user:${username}`);
+  return exists === 1 || exists === true;
 }
 
 const defaultProfile = {
