@@ -1,0 +1,25 @@
+{
+    "install": "npm install",
+    "start": "node server.js",
+    "watch": {
+        "ignore": [
+            "\\.data",
+            "data/.*",
+            "uploads/.*"
+        ],
+        "install": {
+            "include": [
+                "^package\\.json$",
+                "^\\.env$"
+            ]
+        },
+        "restart": {
+            "include": [
+                "\\.js$",
+                "\\.html",
+                "\\.css"
+            ]
+        },
+        "throttle": 100
+    }
+}

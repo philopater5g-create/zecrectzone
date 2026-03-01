@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings — Card.lol</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Sans:wght@400;500;600&family=Syne:wght@600;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="dashboard">
+    <aside class="dashboard-left">
+      <div class="dashboard-header">
+        <h1>Settings</h1>
+        <div class="header-actions">
+          <a href="#" id="viewLink" target="_blank" class="btn btn-ghost">View</a>
+          <button id="logoutBtn" class="btn btn-ghost">Logout</button>
+        </div>
+      </div>
+
+      <nav class="tabs">
+        <button class="tab active" data-tab="profile">Profile</button>
+        <button class="tab" data-tab="link">Link</button>
+        <button class="tab" data-tab="links">Links</button>
+        <button class="tab" data-tab="hover">Hover</button>
+        <button class="tab" data-tab="appearance">Appearance</button>
+        <button class="tab" data-tab="typography">Typography</button>
+        <button class="tab" data-tab="preview">Discord Preview</button>
+        <button class="tab" data-tab="music">Music</button>
+      </nav>
+
+      <div class="tab-panels">
+        <div id="panel-profile" class="tab-panel active">
+          <div class="field">
+            <label>Display Name</label>
+            <input type="text" id="displayName" placeholder="Your name" class="input">
+          </div>
+          <div class="field">
+            <label>Description</label>
+            <textarea id="description" class="input input-textarea" placeholder="Tell people about yourself..." rows="3"></textarea>
+          </div>
+          <div class="field">
+            <label>Profile Picture</label>
+            <div class="upload-zone" id="pfpZone">
+              <input type="hidden" id="pfpUrl" value="">
+              <input type="file" id="pfpInput" accept="image/*,video/mp4" hidden>
+              <img id="pfpPreview" class="upload-preview" src="" alt="">
+              <video id="pfpPreviewVideo" class="upload-preview-video" autoplay muted loop playsinline></video>
+              <span class="upload-label">Click to upload</span>
+              <span class="upload-hint">PNG, JPG, GIF, MP4 • 15MB max</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Second PFP (on hover)</label>
+            <div class="upload-zone upload-zone-sm" id="pfp2Zone">
+              <input type="hidden" id="pfp2Url" value="">
+              <input type="file" id="pfp2Input" accept="image/*,video/mp4" hidden>
+              <img id="pfp2Preview" class="upload-preview" src="" alt="">
+              <video id="pfp2PreviewVideo" class="upload-preview-video" autoplay muted loop playsinline></video>
+              <span class="upload-label">Optional</span>
+            </div>
+          </div>
+          <div class="field field-row">
+            <label>Switch PFP on hover</label>
+            <input type="checkbox" id="switchPfpOnHover">
+          </div>
+          <div class="field">
+            <label>PFP Shape</label>
+            <select id="pfpShape">
+              <option value="circle">Circle</option>
+              <option value="rounded">Rounded</option>
+              <option value="square">Square</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="panel-link" class="tab-panel">
+          <p class="panel-desc">Your custom URL to share. Leave blank to use your username.</p>
+          <div class="field">
+            <label>Custom link</label>
+            <input type="text" id="customLink" placeholder="my-cool-link" class="input" pattern="[a-zA-Z0-9\-]*" maxlength="30">
+            <span class="field-hint">Letters, numbers, hyphens only • 2–30 chars</span>
+          </div>
+          <div class="field">
+            <label>Your profile URL</label>
+            <div class="url-display" id="profileUrlDisplay">—</div>
+            <button type="button" id="copyLinkBtn" class="btn btn-outline">Copy link</button>
+          </div>
+          <div class="field">
+            <label>Profile views</label>
+            <div class="view-count" id="viewCountDisplay">0</div>
+            <span class="field-hint">People who clicked your link</span>
+          </div>
+        </div>
+
+        <div id="panel-links" class="tab-panel">
+          <div id="linksContainer" class="links-list"></div>
+          <button type="button" id="addLinkBtn" class="btn btn-outline">+ Add Link</button>
+        </div>
+
+        <div id="panel-hover" class="tab-panel">
+          <div class="field">
+            <label>Tilt X <span id="tiltXVal">10</span>°</label>
+            <input type="range" id="tiltX" min="-30" max="30" value="10">
+          </div>
+          <div class="field">
+            <label>Tilt Y <span id="tiltYVal">10</span>°</label>
+            <input type="range" id="tiltY" min="-30" max="30" value="10">
+          </div>
+          <div class="field">
+            <label>Duration <span id="tiltDurationVal">0.3</span>s</label>
+            <input type="range" id="tiltDuration" min="0.1" max="2" step="0.1" value="0.3">
+          </div>
+          <div class="field">
+            <label>Scale <span id="scaleVal">1.02</span>×</label>
+            <input type="range" id="scaleOnHover" min="1" max="1.2" step="0.01" value="1.02">
+          </div>
+          <div class="field field-row">
+            <label>Glow on hover</label>
+            <input type="checkbox" id="glowOnHover" checked>
+          </div>
+        </div>
+
+        <div id="panel-appearance" class="tab-panel">
+          <div class="field">
+            <label>Background</label>
+            <div class="upload-zone upload-zone-wide" id="bgZone">
+              <input type="hidden" id="bgUrl" value="">
+              <input type="file" id="bgInput" accept="image/*" hidden>
+              <img id="bgPreview" class="upload-preview" src="" alt="">
+              <span class="upload-label">Upload image</span>
+              <span class="upload-hint">Or use color below</span>
+            </div>
+          </div>
+          <div class="field field-row">
+            <label>Background Color</label>
+            <div class="color-input-wrap">
+              <input type="color" id="bgColor" value="#0f0f11">
+              <input type="text" id="bgColorText" value="#0f0f11" class="input">
+            </div>
+          </div>
+          <div class="field field-row">
+            <label>Blur background</label>
+            <input type="checkbox" id="blurBg">
+          </div>
+          <div class="field field-row">
+            <label>Accent</label>
+            <div class="color-input-wrap">
+              <input type="color" id="accentColor" value="#f59e0b">
+              <input type="text" id="accentColorText" value="#f59e0b" class="input">
+            </div>
+          </div>
+          <div class="field">
+            <label>Border radius <span id="radiusVal">24</span>px</label>
+            <input type="range" id="borderRadius" min="0" max="48" value="24">
+          </div>
+          <div class="field">
+            <label>Shadow <span id="shadowVal">0.5</span></label>
+            <input type="range" id="shadowIntensity" min="0" max="1" step="0.1" value="0.5">
+          </div>
+        </div>
+
+        <div id="panel-typography" class="tab-panel">
+          <div class="field">
+            <label>Font</label>
+            <select id="fontFamily">
+              <option value="DM Sans">DM Sans</option>
+              <option value="Syne">Syne</option>
+              <option value="Inter">Inter</option>
+              <option value="Space Mono">Space Mono</option>
+              <option value="Playfair Display">Playfair Display</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="panel-preview" class="tab-panel">
+          <p class="panel-desc">Customize how your link appears when shared in Discord, Twitter, etc.</p>
+          <div class="field">
+            <label>Preview Image</label>
+            <div class="upload-zone upload-zone-wide" id="previewZone">
+              <input type="hidden" id="previewUrl" value="">
+              <input type="file" id="previewInput" accept="image/*,video/mp4" hidden>
+              <img id="previewImagePreview" class="upload-preview" src="" alt="">
+              <video id="previewImagePreviewVideo" class="upload-preview-video" autoplay muted loop playsinline></video>
+              <span class="upload-label">Upload for embed</span>
+              <span class="upload-hint">Image or MP4 • 1200×630 for embed</span>
+            </div>
+          </div>
+          <div class="field">
+            <label>Preview Title</label>
+            <input type="text" id="previewTitle" placeholder="Title shown in embed" class="input">
+          </div>
+          <div class="field">
+            <label>Preview Description</label>
+            <textarea id="previewDescription" class="input input-textarea" placeholder="Description in embed" rows="2"></textarea>
+          </div>
+        </div>
+
+        <div id="panel-music" class="tab-panel">
+          <p class="panel-desc">Background music plays when someone enters your profile.</p>
+          <div class="field">
+            <label>Track</label>
+            <div class="upload-zone upload-zone-wide" id="musicZone">
+              <input type="hidden" id="musicUrl" value="">
+              <input type="file" id="musicInput" accept="audio/mpeg,audio/mp3,audio/wav,.mp3,.m4a" hidden>
+              <span class="upload-label" id="musicLabel">Click to upload MP3</span>
+              <span class="upload-hint">Plays when visitor clicks to enter • 10MB max</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="save-bar">
+        <button id="saveBtn" class="btn btn-primary">Save Changes</button>
+      </div>
+    </aside>
+
+    <main class="dashboard-right">
+      <div class="preview-wrap">
+        <span class="preview-badge">Live Preview</span>
+        <div id="previewCard" class="profile-card preview-mode"></div>
+      </div>
+    </main>
+  </div>
+  <script src="dashboard.js"></script>
+</body>
+</html>
