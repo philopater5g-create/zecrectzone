@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 import cookieParser from 'cookie-parser';
 import multer from 'multer';
-import { Redis } from '@upstash/redis';
+import { MongoClient } from 'mongodb';
 import { put } from '@vercel/blob';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -13,17 +13,26 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SALT_ROUNDS = 10;
 
-// Initialize Redis directly, supporting both Upstash and Vercel KV environment variables
-const kvUrl = process.env.UPSTASH_REDIS_REST_URL || process.env.KV_REST_API_URL;
-const kvToken = process.env.UPSTASH_REDIS_REST_TOKEN || process.env.KV_REST_API_TOKEN;
+// --- MongoDB Connection ---
+const MONGODB_URI = process.env.MONGODB_URI;
 
-let kv;
-if (kvUrl && kvToken) {
-  kv = new Redis({ url: kvUrl, token: kvToken });
-} else {
-  console.warn("WARNING: Redis environment variables are missing. Database calls will fail.");
-  // Create a dummy proxy so the app doesn't immediately crash on boot
-  kv = new Proxy({}, { get: () => async () => null });
+let dbClient = null;
+let db = null;
+
+async function getDb() {
+  if (db) return db;
+  if (!MONGODB_URI) throw new Error('MONGODB_URI environment variable is not set. Please add it in your Vercel project settings.');
+  if (!dbClient) {
+    dbClient = new MongoClient(MONGODB_URI, { maxPoolSize: 5, serverSelectionTimeoutMS: 5000 });
+    await dbClient.connect();
+  }
+  db = dbClient.db('cardlol');
+  // Ensure indexes exist
+  await db.collection('users').createIndex({ username: 1 }, { unique: true });
+  await db.collection('users').createIndex({ 'profile.customLink': 1 }, { sparse: true });
+  await db.collection('sessions').createIndex({ token: 1 }, { unique: true });
+  await db.collection('sessions').createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0 });
+  return db;
 }
 
 app.use(express.json());
@@ -38,7 +47,6 @@ const isProd = !!process.env.VERCEL || process.env.NODE_ENV === 'production';
 const COOKIE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
 
 // On Vercel (serverless), req.protocol may not reflect HTTPS correctly.
-// We must look at the x-forwarded-proto header instead.
 function isSecureRequest(req) {
   if (!isProd) return false;
   const proto = req.headers['x-forwarded-proto'];
@@ -55,34 +63,54 @@ function makeCookieOptions(req) {
   };
 }
 
-// --- Vercel KV Database Helpers ---
+// --- Database Helpers ---
 async function getSession(token) {
   if (!token) return null;
-  const data = await kv.get(`session:${token}`);
-  return typeof data === 'string' ? JSON.parse(data) : data;
+  const database = await getDb();
+  const session = await database.collection('sessions').findOne({ token });
+  if (!session) return null;
+  return { username: session.username };
 }
+
 async function setSession(token, username) {
-  await kv.set(`session:${token}`, JSON.stringify({ username }), { ex: 7 * 24 * 60 * 60 });
+  const database = await getDb();
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  await database.collection('sessions').updateOne(
+    { token },
+    { $set: { token, username, expiresAt } },
+    { upsert: true }
+  );
 }
+
 async function deleteSession(token) {
   if (!token) return;
-  await kv.del(`session:${token}`);
+  const database = await getDb();
+  await database.collection('sessions').deleteOne({ token });
 }
 
 async function getUser(username) {
-  const data = await kv.get(`user:${username}`);
-  return typeof data === 'string' ? JSON.parse(data) : data;
+  if (!username) return null;
+  const database = await getDb();
+  const user = await database.collection('users').findOne({ username: username.toLowerCase() });
+  if (!user) return null;
+  const { _id, ...rest } = user;
+  return rest;
 }
+
 async function saveUser(username, userData) {
-  await kv.set(`user:${username}`, JSON.stringify(userData));
-  if (userData.profile?.customLink) {
-    const slug = userData.profile.customLink.toLowerCase().replace(/\s/g, '');
-    await kv.set(`slug:${slug}`, username);
-  }
+  const database = await getDb();
+  const { _id, ...data } = userData;
+  await database.collection('users').updateOne(
+    { username: username.toLowerCase() },
+    { $set: { ...data, username: username.toLowerCase() } },
+    { upsert: true }
+  );
 }
+
 async function userExists(username) {
-  const exists = await kv.exists(`user:${username}`);
-  return exists === 1 || exists === true;
+  const database = await getDb();
+  const count = await database.collection('users').countDocuments({ username: username.toLowerCase() });
+  return count > 0;
 }
 
 const defaultProfile = {
@@ -97,105 +125,124 @@ const defaultProfile = {
 };
 
 async function findUserBySlug(slug) {
-  const s = (slug || '').toLowerCase().replace(/\s/g, '');
-  let user = await getUser(s);
-  if (user) return user;
-
-  const usernameFromSlug = await kv.get(`slug:${s}`);
-  if (usernameFromSlug) return await getUser(usernameFromSlug);
+  if (!slug) return null;
+  const s = slug.toLowerCase().replace(/\s/g, '');
+  const database = await getDb();
+  // First try direct username match
+  let user = await database.collection('users').findOne({ username: s });
+  if (user) { const { _id, ...rest } = user; return rest; }
+  // Then try custom link
+  user = await database.collection('users').findOne({ 'profile.customLink': s });
+  if (user) { const { _id, ...rest } = user; return rest; }
   return null;
 }
 
 // --- Middleware ---
 async function auth(req, res, next) {
-  const token = req.cookies?.token || req.headers?.authorization?.replace('Bearer ', '');
-  if (!token) return res.status(401).json({ error: 'Unauthorized' });
-  const sessionData = await getSession(token);
-  if (!sessionData) return res.status(401).json({ error: 'Unauthorized' });
-  req.user = sessionData;
-  next();
+  try {
+    const token = req.cookies?.token || req.headers?.authorization?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+    const sessionData = await getSession(token);
+    if (!sessionData) return res.status(401).json({ error: 'Unauthorized' });
+    req.user = sessionData;
+    next();
+  } catch (err) {
+    console.error('Auth middleware error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 }
 
 // --- Routes ---
 app.post('/api/signup', async (req, res) => {
-  if (!kvUrl || !kvToken) return res.status(500).json({ error: 'Database is not connected! Please link Upstash Redis in your Vercel storage tab.' });
+  try {
+    const { username, password, displayName } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
 
-  const { username, password, displayName } = req.body;
-  if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+    const lower = username.toLowerCase().replace(/\s/g, '');
+    if (lower.length < 3) return res.status(400).json({ error: 'Username too short' });
+    if (password.length < 6) return res.status(400).json({ error: 'Password must be 6+ chars' });
+    if (await userExists(lower)) return res.status(400).json({ error: 'Username taken' });
 
-  const lower = username.toLowerCase().replace(/\s/g, '');
-  if (await userExists(lower)) return res.status(400).json({ error: 'Username taken' });
-  if (lower.length < 3) return res.status(400).json({ error: 'Username too short' });
-  if (password.length < 6) return res.status(400).json({ error: 'Password must be 6+ chars' });
+    const hash = await bcrypt.hash(password, SALT_ROUNDS);
+    const token = randomUUID();
+    const profile = { ...defaultProfile, displayName: displayName || username };
 
-  const hash = await bcrypt.hash(password, SALT_ROUNDS);
-  const token = randomUUID();
-  const profile = { ...defaultProfile, displayName: displayName || username };
+    const newUser = { username: lower, displayName: displayName || username, password: hash, profile, viewCount: 0, createdAt: Date.now() };
+    await saveUser(lower, newUser);
+    await setSession(token, lower);
 
-  const newUser = { username: lower, displayName: displayName || username, password: hash, profile, viewCount: 0, createdAt: Date.now() };
-  await saveUser(lower, newUser);
-  await setSession(token, lower);
-
-  res.cookie('token', token, makeCookieOptions(req));
-  res.json({ success: true, username: lower });
+    res.cookie('token', token, makeCookieOptions(req));
+    res.json({ success: true, username: lower });
+  } catch (err) {
+    console.error('Signup error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/api/login', async (req, res) => {
-  if (!kvUrl || !kvToken) return res.status(500).json({ error: 'Database is not connected! Please link Upstash Redis in your Vercel storage tab.' });
+  try {
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
 
-  const { username, password } = req.body;
-  if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
+    const lower = username.toLowerCase().replace(/\s/g, '');
+    const user = await getUser(lower);
+    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
 
-  const lower = username.toLowerCase().replace(/\s/g, '');
-  const user = await getUser(lower);
-  if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
-  const ok = await bcrypt.compare(password, user.password);
-  if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
-
-  const token = randomUUID();
-  await setSession(token, lower);
-  res.cookie('token', token, makeCookieOptions(req));
-  res.json({ success: true, username: lower });
+    const token = randomUUID();
+    await setSession(token, lower);
+    res.cookie('token', token, makeCookieOptions(req));
+    res.json({ success: true, username: lower });
+  } catch (err) {
+    console.error('Login error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.post('/api/logout', async (req, res) => {
-  await deleteSession(req.cookies?.token);
+  await deleteSession(req.cookies?.token).catch(() => { });
   res.clearCookie('token', { path: '/', sameSite: 'lax', secure: isSecureRequest(req) });
   res.json({ success: true });
 });
 
-app.get('/api/health', (req, res) => {
-  const missing = [];
-  if (!kvUrl) missing.push('UPSTASH_REDIS_REST_URL (or KV_REST_API_URL)');
-  if (!kvToken) missing.push('UPSTASH_REDIS_REST_TOKEN (or KV_REST_API_TOKEN)');
+app.get('/api/health', async (req, res) => {
+  const hasMongoUri = !!MONGODB_URI;
+  let dbOk = false;
+  if (hasMongoUri) {
+    try {
+      await getDb();
+      dbOk = true;
+    } catch { }
+  }
   res.json({
-    ok: missing.length === 0,
-    kvConnected: !!(kvUrl && kvToken),
-    missing: missing.length ? missing : undefined,
-    hint: missing.length ? 'Go to Vercel dashboard → Storage → Connect Upstash Redis, then redeploy.' : undefined
+    ok: dbOk,
+    dbConnected: dbOk,
+    hasMongoUri,
+    hint: !hasMongoUri ? 'Add MONGODB_URI to your Vercel environment variables. Get a free connection string at mongodb.com/atlas.' : (!dbOk ? 'MONGODB_URI is set but could not connect. Check the URI is correct.' : undefined)
   });
 });
 
-// Temporary debug route — safe to leave in (shows no secrets)
 app.get('/api/debug-env', (req, res) => {
   res.json({
-    UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL ? '✅ set' : '❌ missing',
-    UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN ? '✅ set' : '❌ missing',
-    KV_REST_API_URL: process.env.KV_REST_API_URL ? '✅ set' : '❌ missing',
-    KV_REST_API_TOKEN: process.env.KV_REST_API_TOKEN ? '✅ set' : '❌ missing',
-    BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN ? '✅ set' : '❌ missing',
+    MONGODB_URI: process.env.MONGODB_URI ? `✅ set (${process.env.MONGODB_URI.replace(/\/\/[^:]+:[^@]+@/, '//***:***@')})` : '❌ missing',
+    BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN ? '✅ set' : '❌ missing (optional, needed for image uploads)',
     NODE_ENV: process.env.NODE_ENV || '(not set)',
     VERCEL: process.env.VERCEL || '(not set)',
   });
 });
 
 app.get('/api/me', auth, async (req, res) => {
-  const user = await getUser(req.user.username);
-  if (!user) return res.status(404).json({ error: 'User not found' });
-  if (typeof user.viewCount !== 'number') user.viewCount = 0;
-  const { password, ...rest } = user;
-  res.json(rest);
+  try {
+    const user = await getUser(req.user.username);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (typeof user.viewCount !== 'number') user.viewCount = 0;
+    const { password, ...rest } = user;
+    res.json(rest);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // --- Vercel Blob Upload Handler ---
@@ -215,7 +262,7 @@ async function handleUpload(req, res) {
     res.json({ url: blob.url });
   } catch (error) {
     console.error("Blob upload error:", error);
-    res.status(500).json({ error: 'Failed to upload to cloud storage' });
+    res.status(500).json({ error: 'Failed to upload to cloud storage. Add BLOB_READ_WRITE_TOKEN in Vercel settings.' });
   }
 }
 
@@ -226,46 +273,55 @@ app.post('/api/upload/preview', auth, upload.single('preview'), handleUpload);
 app.post('/api/upload/music', auth, uploadMusic.single('music'), handleUpload);
 
 app.put('/api/profile', auth, async (req, res) => {
-  const user = await getUser(req.user.username);
-  if (!user) return res.status(404).json({ error: 'User not found' });
+  try {
+    const user = await getUser(req.user.username);
+    if (!user) return res.status(404).json({ error: 'User not found' });
 
-  if (req.body.customLink !== undefined) {
-    const slug = String(req.body.customLink || '').toLowerCase().replace(/\s/g, '');
-    if (slug && !/^[a-z0-9\-]{2,30}$/.test(slug)) return res.status(400).json({ error: 'Custom link: 2–30 chars, letters, numbers, hyphens only' });
-    if (slug) {
-      const existing = await findUserBySlug(slug);
-      if (existing && existing.username !== user.username) return res.status(400).json({ error: 'Custom link already taken' });
+    if (req.body.customLink !== undefined) {
+      const slug = String(req.body.customLink || '').toLowerCase().replace(/\s/g, '');
+      if (slug && !/^[a-z0-9\-]{2,30}$/.test(slug)) return res.status(400).json({ error: 'Custom link: 2–30 chars, letters, numbers, hyphens only' });
+      if (slug) {
+        const existing = await findUserBySlug(slug);
+        if (existing && existing.username !== user.username) return res.status(400).json({ error: 'Custom link already taken' });
+      }
     }
-  }
 
-  user.profile = { ...user.profile, ...req.body };
-  user.displayName = user.profile.displayName || user.username;
-  await saveUser(user.username, user);
-  res.json({ success: true, profile: user.profile });
+    user.profile = { ...user.profile, ...req.body };
+    user.displayName = user.profile.displayName || user.username;
+    await saveUser(user.username, user);
+    res.json({ success: true, profile: user.profile });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get('/api/c/:slug', async (req, res) => {
-  const u = await findUserBySlug(req.params.slug);
-  if (!u) return res.status(404).json({ error: 'Profile not found' });
-  if (typeof u.viewCount !== 'number') u.viewCount = 0;
-  res.json({ username: u.username, displayName: u.displayName, profile: u.profile, viewCount: u.viewCount });
+  try {
+    const u = await findUserBySlug(req.params.slug);
+    if (!u) return res.status(404).json({ error: 'Profile not found' });
+    if (typeof u.viewCount !== 'number') u.viewCount = 0;
+    res.json({ username: u.username, displayName: u.displayName, profile: u.profile, viewCount: u.viewCount });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 app.get('/c/:slug', async (req, res) => {
-  const u = await findUserBySlug(req.params.slug);
-  if (u) {
-    if (typeof u.viewCount !== 'number') u.viewCount = 0;
-    u.viewCount++;
-    await saveUser(u.username, u);
-  }
-  const profile = u?.profile || defaultProfile;
-  const displayName = u?.displayName || req.params.slug;
-  const baseUrl = `${req.protocol}://${req.get('host')}`;
-  const ogImage = profile.previewImage
-    ? (profile.previewImage.startsWith('http') ? profile.previewImage : baseUrl + profile.previewImage)
-    : (profile.pfp?.startsWith('http') ? profile.pfp : baseUrl + (profile.pfp || ''));
+  try {
+    const u = await findUserBySlug(req.params.slug);
+    if (u) {
+      if (typeof u.viewCount !== 'number') u.viewCount = 0;
+      u.viewCount++;
+      await saveUser(u.username, u);
+    }
+    const profile = u?.profile || defaultProfile;
+    const displayName = u?.displayName || req.params.slug;
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const ogImage = profile.previewImage
+      ? (profile.previewImage.startsWith('http') ? profile.previewImage : baseUrl + profile.previewImage)
+      : (profile.pfp?.startsWith('http') ? profile.pfp : baseUrl + (profile.pfp || ''));
 
-  const html = `<!DOCTYPE html>
+    const html = `<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -290,7 +346,10 @@ app.get('/c/:slug', async (req, res) => {
   <script src="/profile.js"></script>
 </body>
 </html>`;
-  res.send(html);
+    res.send(html);
+  } catch (err) {
+    res.status(500).send('Error loading profile');
+  }
 });
 
 function escape(s) {
@@ -300,8 +359,7 @@ function escape(s) {
 
 export default app;
 
-// In Vercel, the express app is exported. 
-// For local execution, we start the server if not running inside a serverless environment.
+// For local execution only
 if (process.env.NODE_ENV !== 'production' || process.env.RUN_LOCAL === 'true') {
   app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
 }

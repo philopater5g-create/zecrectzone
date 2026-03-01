@@ -6,7 +6,19 @@ const errorEl = document.getElementById('authError');
 // Check if already logged in
 fetch('/api/me', { credentials: 'include' })
   .then(r => { if (r.ok) location.href = '/dashboard.html'; })
-  .catch(() => {});
+  .catch(() => { });
+
+(async () => {
+  try {
+    const r = await fetch('/api/health');
+    const h = await r.json().catch(() => ({}));
+    if (h && h.dbConnected === false) {
+      errorEl.textContent = h.hint || 'Database not connected. Add MONGODB_URI to your Vercel environment variables.';
+      loginForm.querySelector('button[type="submit"]').disabled = true;
+      signupForm.querySelector('button[type="submit"]').disabled = true;
+    }
+  } catch { }
+})();
 
 tabs.forEach(tab => {
   tab.addEventListener('click', () => {
