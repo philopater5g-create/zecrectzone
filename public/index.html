@@ -10,6 +10,16 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+  <!-- Credits Modal -->
+  <div id="creditsModal" class="credits-modal">
+    <div class="credits-content">
+      <h2>Credits</h2>
+      <p>Created by <strong>fvdsffluiv_14803</strong> on Discord</p>
+      <p><strong>We hate prem</strong></p>
+      <button onclick="document.getElementById('creditsModal').style.display='none'" class="btn btn-primary">Close</button>
+    </div>
+  </div>
+
   <div class="auth-page">
     <div class="auth-card">
       <h1 class="auth-logo">card<span>.lol</span></h1>
@@ -39,5 +49,11 @@
     </div>
   </div>
   <script src="auth.js"></script>
+  <script>
+    // Show credits modal on page load
+    window.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('creditsModal').style.display = 'flex';
+    });
+  </script>
 </body>
 </html>
