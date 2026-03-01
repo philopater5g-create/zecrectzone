@@ -5,13 +5,16 @@ import bcrypt from 'bcryptjs';
 import { randomUUID } from 'crypto';
 import cookieParser from 'cookie-parser';
 import multer from 'multer';
-import { kv } from '@vercel/kv';
+import { Redis } from '@upstash/redis';
 import { put } from '@vercel/blob';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3000;
 const SALT_ROUNDS = 10;
+
+// Initialize Redis directly
+const kv = Redis.fromEnv();
 
 app.use(express.json());
 app.use(cookieParser());
@@ -64,7 +67,7 @@ async function findUserBySlug(slug) {
   const s = (slug || '').toLowerCase().replace(/\s/g, '');
   let user = await getUser(s);
   if (user) return user;
-  
+
   const usernameFromSlug = await kv.get(`slug:${s}`);
   if (usernameFromSlug) return await getUser(usernameFromSlug);
   return null;
@@ -84,20 +87,20 @@ async function auth(req, res, next) {
 app.post('/api/signup', async (req, res) => {
   const { username, password, displayName } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
-  
+
   const lower = username.toLowerCase().replace(/\s/g, '');
   if (await userExists(lower)) return res.status(400).json({ error: 'Username taken' });
   if (lower.length < 3) return res.status(400).json({ error: 'Username too short' });
   if (password.length < 6) return res.status(400).json({ error: 'Password must be 6+ chars' });
-  
+
   const hash = await bcrypt.hash(password, SALT_ROUNDS);
   const token = randomUUID();
   const profile = { ...defaultProfile, displayName: displayName || username };
-  
+
   const newUser = { username: lower, displayName: displayName || username, password: hash, profile, viewCount: 0, createdAt: Date.now() };
   await saveUser(lower, newUser);
   await setSession(token, lower);
-  
+
   res.cookie('token', token, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 });
   res.json({ success: true, username: lower });
 });
@@ -105,14 +108,14 @@ app.post('/api/signup', async (req, res) => {
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) return res.status(400).json({ error: 'Username and password required' });
-  
+
   const lower = username.toLowerCase().replace(/\s/g, '');
   const user = await getUser(lower);
   if (!user) return res.status(401).json({ error: 'Invalid credentials' });
-  
+
   const ok = await bcrypt.compare(password, user.password);
   if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
-  
+
   const token = randomUUID();
   await setSession(token, lower);
   res.cookie('token', token, { httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 });
@@ -141,7 +144,7 @@ async function handleUpload(req, res) {
     const ext = isMusic
       ? ((req.file.originalname || '').match(/\.(mp3|m4a|ogg|wav)$/i)?.[1] || 'mp3')
       : ((req.file.originalname || '').match(/\.(png|jpg|jpeg|gif|webp|svg|mp4)$/i)?.[1] || 'png');
-    
+
     const filename = `${req.user.username}/${req.file.fieldname}-${Date.now()}.${ext}`;
     const blob = await put(filename, req.file.buffer, {
       access: 'public',
@@ -163,7 +166,7 @@ app.post('/api/upload/music', auth, uploadMusic.single('music'), handleUpload);
 app.put('/api/profile', auth, async (req, res) => {
   const user = await getUser(req.user.username);
   if (!user) return res.status(404).json({ error: 'User not found' });
-  
+
   if (req.body.customLink !== undefined) {
     const slug = String(req.body.customLink || '').toLowerCase().replace(/\s/g, '');
     if (slug && !/^[a-z0-9\-]{2,30}$/.test(slug)) return res.status(400).json({ error: 'Custom link: 2–30 chars, letters, numbers, hyphens only' });
@@ -172,7 +175,7 @@ app.put('/api/profile', auth, async (req, res) => {
       if (existing && existing.username !== user.username) return res.status(400).json({ error: 'Custom link already taken' });
     }
   }
-  
+
   user.profile = { ...user.profile, ...req.body };
   user.displayName = user.profile.displayName || user.username;
   await saveUser(user.username, user);
@@ -238,5 +241,5 @@ export default app;
 // In Vercel, the express app is exported. 
 // For local execution, we start the server if not running inside a serverless environment.
 if (process.env.NODE_ENV !== 'production' || process.env.RUN_LOCAL === 'true') {
-  app.listen(PORT, () => console.log(\`http://localhost:\${PORT}\`));
+  app.listen(PORT, () => console.log(`http://localhost:${PORT}`));
 }
