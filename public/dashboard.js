@@ -242,7 +242,10 @@ async function uploadFile(endpoint, file, field) {
   const fd = new FormData();
   fd.append(field, file);
   const res = await fetch(endpoint, { method: 'POST', body: fd, credentials: 'include' });
-  if (!res.ok) throw new Error('Upload failed');
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({ error: 'Upload failed' }));
+    throw new Error(errorData.error || `Upload failed with status ${res.status}`);
+  }
   const { url } = await res.json();
   return url;
 }
@@ -262,7 +265,10 @@ function setupUpload(zoneId, inputId, endpoint, field, urlId, onSuccess) {
       if (onSuccess) onSuccess(); else setUploadZoneDisplay(urlId.replace('Url',''), getBaseUrl() + url);
       debouncePreview();
       input.value = '';
-    } catch (e) { alert('Upload failed'); }
+    } catch (e) { 
+      console.error('Upload error:', e);
+      alert('Upload failed: ' + e.message); 
+    }
   };
 }
 
