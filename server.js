@@ -7,6 +7,8 @@ import cookieParser from 'cookie-parser';
 import multer from 'multer';
 import { MongoClient } from 'mongodb';
 import { put } from '@vercel/blob';
+import { writeFile, mkdir } from 'fs/promises';
+import { existsSync } from 'fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -38,6 +40,7 @@ async function getDb() {
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.static(join(__dirname, 'public')));
+app.use('/uploads', express.static(join(__dirname, 'uploads')));
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage, limits: { fileSize: 15 * 1024 * 1024 } });
@@ -245,7 +248,7 @@ app.get('/api/me', auth, async (req, res) => {
   }
 });
 
-// --- Vercel Blob Upload Handler ---
+// --- Upload Handler (Local & Vercel Blob) ---
 async function handleUpload(req, res) {
   if (!req.file) return res.status(400).json({ error: 'No file' });
   try {
@@ -254,15 +257,31 @@ async function handleUpload(req, res) {
       ? ((req.file.originalname || '').match(/\.(mp3|m4a|ogg|wav)$/i)?.[1] || 'mp3')
       : ((req.file.originalname || '').match(/\.(png|jpg|jpeg|gif|webp|svg|mp4)$/i)?.[1] || 'png');
 
-    const filename = `${req.user.username}/${req.file.fieldname}-${Date.now()}.${ext}`;
-    const blob = await put(filename, req.file.buffer, {
-      access: 'public',
-      contentType: req.file.mimetype
-    });
-    res.json({ url: blob.url });
+    const timestamp = Date.now();
+    const filename = `${req.user.username}/${req.file.fieldname}-${timestamp}.${ext}`;
+    
+    // Use Vercel Blob in production if token is available
+    if (isProd && process.env.BLOB_READ_WRITE_TOKEN) {
+      const blob = await put(filename, req.file.buffer, {
+        access: 'public',
+        contentType: req.file.mimetype
+      });
+      res.json({ url: blob.url });
+    } else {
+      // Local file storage for development
+      const uploadDir = join(__dirname, 'uploads', req.user.username);
+      if (!existsSync(uploadDir)) {
+        await mkdir(uploadDir, { recursive: true });
+      }
+      const localFilename = `${req.file.fieldname}-${timestamp}.${ext}`;
+      const filePath = join(uploadDir, localFilename);
+      await writeFile(filePath, req.file.buffer);
+      const url = `/uploads/${req.user.username}/${localFilename}`.replace(/\\/g, '/');
+      res.json({ url });
+    }
   } catch (error) {
-    console.error("Blob upload error:", error);
-    res.status(500).json({ error: 'Failed to upload to cloud storage. Add BLOB_READ_WRITE_TOKEN in Vercel settings.' });
+    console.error("Upload error:", error);
+    res.status(500).json({ error: 'Failed to upload file: ' + error.message });
   }
 }
 
