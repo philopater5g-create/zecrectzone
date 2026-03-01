@@ -121,6 +121,7 @@ const defaultProfile = {
   pfp2: '', pfpShape: 'circle', switchPfpOnHover: false, links: [],
   tiltX: 10, tiltY: 10, tiltDuration: 0.3, scaleOnHover: 1.02, glowOnHover: true,
   bgColor: '#0f0f11', bgGradient: '', bgImage: '', blurBg: false,
+  pageBgUrl: '', pageBgColor: '#09090b', blurPageBg: false,
   accentColor: '#f59e0b', borderColor: 'rgba(255,255,255,0.1)',
   borderRadius: 24, shadowIntensity: 0.5, fontFamily: 'DM Sans',
   previewTitle: '', previewDescription: '', previewImage: '',
@@ -294,6 +295,7 @@ async function handleUpload(req, res) {
 app.post('/api/upload/pfp', auth, upload.single('pfp'), handleUpload);
 app.post('/api/upload/pfp2', auth, upload.single('pfp2'), handleUpload);
 app.post('/api/upload/bg', auth, upload.single('bg'), handleUpload);
+app.post('/api/upload/pagebg', auth, upload.single('pagebg'), handleUpload);
 app.post('/api/upload/preview', auth, upload.single('preview'), handleUpload);
 app.post('/api/upload/music', auth, uploadMusic.single('music'), handleUpload);
 

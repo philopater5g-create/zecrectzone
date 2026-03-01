@@ -25,6 +25,7 @@
         <button class="tab" data-tab="links">Links</button>
         <button class="tab" data-tab="hover">Hover</button>
         <button class="tab" data-tab="appearance">Appearance</button>
+        <button class="tab" data-tab="mainbg">Main Background</button>
         <button class="tab" data-tab="typography">Typography</button>
         <button class="tab" data-tab="preview">Discord Preview</button>
         <button class="tab" data-tab="music">Music</button>
@@ -158,6 +159,32 @@
           <div class="field">
             <label>Shadow <span id="shadowVal">0.5</span></label>
             <input type="range" id="shadowIntensity" min="0" max="1" step="0.1" value="0.5">
+          </div>
+        </div>
+
+        <div id="panel-mainbg" class="tab-panel">
+          <p class="panel-desc">Customize the page background behind your profile card.</p>
+          <div class="field">
+            <label>Page Background Image</label>
+            <div class="upload-zone upload-zone-wide" id="pageBgZone">
+              <input type="hidden" id="pageBgUrl" value="">
+              <input type="file" id="pageBgInput" accept="image/*,video/mp4" hidden>
+              <img id="pageBgPreview" class="upload-preview" src="" alt="">
+              <video id="pageBgPreviewVideo" class="upload-preview-video" autoplay muted loop playsinline></video>
+              <span class="upload-label">Upload image or video</span>
+              <span class="upload-hint">PNG, JPG, GIF, MP4 • 15MB max</span>
+            </div>
+          </div>
+          <div class="field field-row">
+            <label>Page Background Color</label>
+            <div class="color-input-wrap">
+              <input type="color" id="pageBgColor" value="#09090b">
+              <input type="text" id="pageBgColorText" value="#09090b" class="input">
+            </div>
+          </div>
+          <div class="field field-row">
+            <label>Blur page background</label>
+            <input type="checkbox" id="blurPageBg">
           </div>
         </div>
 

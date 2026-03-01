@@ -13,6 +13,7 @@ function getProfile() {
   const pfp = document.getElementById('pfpUrl')?.value?.trim();
   const pfp2 = document.getElementById('pfp2Url')?.value?.trim();
   const bg = document.getElementById('bgUrl')?.value?.trim();
+  const pageBg = document.getElementById('pageBgUrl')?.value?.trim();
   const previewImg = document.getElementById('previewUrl')?.value?.trim();
   return {
     displayName: (document.getElementById('displayName')?.value || '').trim(),
@@ -29,6 +30,9 @@ function getProfile() {
     bgColor: document.getElementById('bgColor')?.value || '#0f0f11',
     bgImage: bg || '',
     blurBg: document.getElementById('blurBg')?.checked ?? false,
+    pageBgUrl: pageBg || '',
+    pageBgColor: document.getElementById('pageBgColor')?.value || '#09090b',
+    blurPageBg: document.getElementById('blurPageBg')?.checked ?? false,
     accentColor: document.getElementById('accentColor')?.value || '#f59e0b',
     borderColor: 'rgba(255,255,255,0.1)',
     borderRadius: +document.getElementById('borderRadius')?.value ?? 24,
@@ -63,6 +67,7 @@ function applyProfile(p) {
   setCheck('switchPfpOnHover', p.switchPfpOnHover);
   setCheck('glowOnHover', p.glowOnHover ?? true);
   setCheck('blurBg', p.blurBg);
+  setCheck('blurPageBg', p.blurPageBg);
   document.getElementById('pfpShape').value = p.pfpShape || 'circle';
   document.getElementById('tiltX').value = p.tiltX ?? 10;
   document.getElementById('tiltY').value = p.tiltY ?? 10;
@@ -70,6 +75,8 @@ function applyProfile(p) {
   document.getElementById('scaleOnHover').value = p.scaleOnHover ?? 1.02;
   document.getElementById('bgColor').value = p.bgColor || '#0f0f11';
   document.getElementById('bgColorText').value = p.bgColor || '#0f0f11';
+  document.getElementById('pageBgColor').value = p.pageBgColor || '#09090b';
+  document.getElementById('pageBgColorText').value = p.pageBgColor || '#09090b';
   document.getElementById('accentColor').value = p.accentColor || '#f59e0b';
   document.getElementById('accentColorText').value = p.accentColor || '#f59e0b';
   document.getElementById('borderRadius').value = p.borderRadius ?? 24;
@@ -80,10 +87,12 @@ function applyProfile(p) {
   setUploadZoneDisplay('pfp', p.pfp && p.pfp !== PFG_DEFAULT ? fullUrl(p.pfp) : '');
   setUploadZoneDisplay('pfp2', p.pfp2 ? fullUrl(p.pfp2) : '');
   setUploadZoneDisplay('bg', p.bgImage ? fullUrl(p.bgImage) : '');
+  setUploadZoneDisplay('pagebg', p.pageBgUrl ? fullUrl(p.pageBgUrl) : '');
   setUploadZoneDisplay('preview', p.previewImage ? fullUrl(p.previewImage) : '');
   document.getElementById('pfpUrl').value = p.pfp && p.pfp !== PFG_DEFAULT ? (p.pfp.startsWith('/') ? p.pfp : '/' + p.pfp.replace(getBaseUrl(), '')) : '';
   document.getElementById('pfp2Url').value = p.pfp2 ? (p.pfp2.startsWith('/') ? p.pfp2 : p.pfp2.replace(getBaseUrl(), '')) : '';
   document.getElementById('bgUrl').value = p.bgImage ? (p.bgImage.startsWith('/') ? p.bgImage : p.bgImage.replace(getBaseUrl(), '')) : '';
+  document.getElementById('pageBgUrl').value = p.pageBgUrl ? (p.pageBgUrl.startsWith('/') ? p.pageBgUrl : p.pageBgUrl.replace(getBaseUrl(), '')) : '';
   document.getElementById('previewUrl').value = p.previewImage ? (p.previewImage.startsWith('/') ? p.previewImage : p.previewImage.replace(getBaseUrl(), '')) : '';
   const musicUrlEl = document.getElementById('musicUrl');
   if (musicUrlEl) musicUrlEl.value = p.musicUrl ? (p.musicUrl.startsWith('/') ? p.musicUrl : (p.musicUrl.replace(getBaseUrl(), '').replace(/^\/+/, '/') || p.musicUrl)) : '';
@@ -104,7 +113,7 @@ function updateLinkTab() {
 }
 
 function setUploadZoneDisplay(name, displayUrl) {
-  const map = { pfp: ['pfpZone','pfpPreview','pfpUrl'], pfp2: ['pfp2Zone','pfp2Preview','pfp2Url'], bg: ['bgZone','bgPreview','bgUrl'], preview: ['previewZone','previewImagePreview','previewUrl'] };
+  const map = { pfp: ['pfpZone','pfpPreview','pfpUrl'], pfp2: ['pfp2Zone','pfp2Preview','pfp2Url'], bg: ['bgZone','bgPreview','bgUrl'], pagebg: ['pageBgZone','pageBgPreview','pageBgUrl'], preview: ['previewZone','previewImagePreview','previewUrl'] };
   const [zoneId, previewId, urlId] = map[name] || [];
   const zone = document.getElementById(zoneId);
   const preview = document.getElementById(previewId);
@@ -314,6 +323,7 @@ document.getElementById('copyLinkBtn')?.addEventListener('click', () => {
   setupUpload('pfpZone','pfpInput','/api/upload/pfp','pfp','pfpUrl');
   setupUpload('pfp2Zone','pfp2Input','/api/upload/pfp2','pfp2','pfp2Url');
   setupUpload('bgZone','bgInput','/api/upload/bg','bg','bgUrl');
+  setupUpload('pageBgZone','pageBgInput','/api/upload/pagebg','pagebg','pageBgUrl');
   setupUpload('previewZone','previewInput','/api/upload/preview','preview','previewUrl');
   setupUpload('musicZone','musicInput','/api/upload/music','music','musicUrl', () => {
     const mz = document.getElementById('musicZone');
@@ -321,7 +331,7 @@ document.getElementById('copyLinkBtn')?.addEventListener('click', () => {
     if (mz && ml) { mz.classList.add('has-file'); ml.textContent = 'Track uploaded'; }
   });
 
-  ['displayName','description','customLink','musicUrl','switchPfpOnHover','pfpShape','tiltX','tiltY','tiltDuration','scaleOnHover','glowOnHover','bgColor','bgColorText','blurBg','accentColor','accentColorText','borderRadius','shadowIntensity','fontFamily','previewTitle','previewDescription'].forEach(id => {
+  ['displayName','description','customLink','musicUrl','switchPfpOnHover','pfpShape','tiltX','tiltY','tiltDuration','scaleOnHover','glowOnHover','bgColor','bgColorText','blurBg','pageBgColor','pageBgColorText','blurPageBg','accentColor','accentColorText','borderRadius','shadowIntensity','fontFamily','previewTitle','previewDescription'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', debouncePreview), el.addEventListener('change', debouncePreview);
   });
