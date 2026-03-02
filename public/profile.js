@@ -188,6 +188,181 @@ function playMusic(musicUrl) {
   document.body.appendChild(audio);
 }
 
+function applyCursor(cursor) {
+  if (!cursor || cursor === 'default') {
+    document.body.style.cursor = 'default';
+    return;
+  }
+  if (cursor.startsWith('emoji-')) {
+    const emojis = {
+      'emoji-sparkle': '✨', 'emoji-heart': '❤️', 'emoji-fire': '🔥', 'emoji-star': '⭐',
+      'emoji-ghost': '👻', 'emoji-skull': '💀', 'emoji-crown': '👑', 'emoji-money': '💸',
+      'emoji-alien': '👽', 'emoji-cat': '🐱', 'emoji-dog': '🐶', 'emoji-pizza': '🍕',
+      'emoji-rocket': '🚀', 'emoji-cloud': '☁️', 'emoji-moon': '🌙', 'emoji-gem': '💎',
+      'emoji-butterfly': '🦋', 'emoji-rose': '🌹'
+    };
+    const emoji = emojis[cursor] || '✨';
+    document.body.style.cursor = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' style='font-size:24px'><text y='24'>${emoji}</text></svg>") 16 16, auto`;
+  } else {
+    document.body.style.cursor = cursor;
+  }
+}
+
+function initCursorEffects(effect) {
+  if (!effect || effect === 'none') return;
+
+  const canvas = document.createElement('canvas');
+  canvas.style.position = 'fixed';
+  canvas.style.top = '0';
+  canvas.style.left = '0';
+  canvas.style.width = '100vw';
+  canvas.style.height = '100vh';
+  canvas.style.pointerEvents = 'none';
+  canvas.style.zIndex = '9999';
+  document.body.appendChild(canvas);
+
+  const ctx = canvas.getContext('2d');
+  let width, height;
+  let particles = [];
+  let mouse = { x: -100, y: -100 };
+
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  window.addEventListener('mousemove', e => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+    if (effect === 'trail') createTrail(e.clientX, e.clientY);
+    if (effect === 'sparkles') createSparkle(e.clientX, e.clientY);
+    if (effect === 'bubbles') createBubble(e.clientX, e.clientY);
+    if (effect === 'smoke') createSmoke(e.clientX, e.clientY);
+    if (effect === 'rainbow') createRainbow(e.clientX, e.clientY);
+    if (effect === 'stars') createStar(e.clientX, e.clientY);
+    if (effect === 'hearts') createHeart(e.clientX, e.clientY);
+    if (effect === 'fire') createFire(e.clientX, e.clientY);
+    if (effect === 'pixel') createPixel(e.clientX, e.clientY);
+    if (effect === 'confetti') createConfetti(e.clientX, e.clientY);
+    if (effect === 'snow') createSnow(e.clientX, e.clientY);
+    if (effect === 'energy') createEnergy(e.clientX, e.clientY);
+    if (effect === 'ripple') createRipple(e.clientX, e.clientY);
+  });
+
+  function createTrail(x, y) { particles.push({ x, y, size: 5, color: 'rgba(255,255,255,0.5)', life: 1, vx: 0, vy: 0 }); }
+  function createSparkle(x, y) { for (let i = 0; i < 3; i++) particles.push({ x, y, size: Math.random() * 3, color: `hsl(${Math.random() * 360},100%,70%)`, life: 1, vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2 }); }
+  function createBubble(x, y) { particles.push({ x, y, size: Math.random() * 10 + 5, color: 'rgba(255,255,255,0.2)', life: 1, vx: (Math.random() - 0.5), vy: -Math.random() * 2 }); }
+  function createSmoke(x, y) { particles.push({ x, y, size: 10, color: 'rgba(100,100,100,0.1)', life: 1, vx: (Math.random() - 0.5), vy: -Math.random() * 2 }); }
+  function createRainbow(x, y) { particles.push({ x, y, size: 8, color: `hsl(${Date.now() % 360},100%,50%)`, life: 1, vx: 0, vy: 0 }); }
+  function createStar(x, y) { particles.push({ x, y, size: 15, color: '#ff0', life: 1, vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4, type: 'star' }); }
+  function createHeart(x, y) { particles.push({ x, y, size: 15, color: '#f00', life: 1, vx: (Math.random() - 0.5) * 4, vy: (Math.random() - 0.5) * 4, type: 'heart' }); }
+  function createFire(x, y) { for (let i = 0; i < 2; i++) particles.push({ x, y, size: 10, color: `rgb(255,${Math.random() * 100},0)`, life: 1, vx: (Math.random() - 0.5), vy: -Math.random() * 3 }); }
+  function createPixel(x, y) { particles.push({ x, y, size: 6, color: '#0f0', life: 1, vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2 }); }
+  function createConfetti(x, y) { for (let i = 0; i < 5; i++) particles.push({ x, y, size: 5, color: `hsl(${Math.random() * 360},100%,50%)`, life: 1, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10, gravity: 0.2 }); }
+  function createSnow(x, y) { particles.push({ x: Math.random() * width, y: -10, size: Math.random() * 3 + 1, color: '#fff', life: 1, vx: (Math.random() - 0.5), vy: Math.random() * 2 + 1 }); }
+  function createEnergy(x, y) { particles.push({ x, y, size: 12, color: 'cyan', life: 1, vx: (Math.random() - 0.5) * 2, vy: (Math.random() - 0.5) * 2, type: 'orb' }); }
+  function createRipple(x, y) { particles.push({ x, y, size: 2, color: 'rgba(255,255,255,0.4)', life: 1, vx: 0, vy: 0, type: 'ripple' }); }
+
+  function draw() {
+    ctx.clearRect(0, 0, width, height);
+
+    // Global effects that don't use the particles array
+    if (effect === 'snow') createSnow(); // Auto create snow
+
+    if (effect === 'matrix') {
+      ctx.font = '15px monospace';
+      ctx.fillStyle = 'rgba(0, 255, 0, 0.1)';
+      for (let i = 0; i < 20; i++) ctx.fillText(Math.random() > 0.5 ? '0' : '1', Math.random() * width, Math.random() * height);
+    }
+
+    if (effect === 'glitch') {
+      if (Math.random() > 0.9) {
+        ctx.fillStyle = `rgba(${Math.random() * 255},0,0,0.1)`;
+        ctx.fillRect(0, Math.random() * height, width, 10);
+      }
+    }
+
+    if (effect === 'velocity') {
+      ctx.beginPath();
+      ctx.moveTo(mouse.x, mouse.y);
+      ctx.lineTo(mouse.x - (mouse.x - mouse.lastX || 0) * 5, mouse.y - (mouse.y - mouse.lastY || 0) * 5);
+      ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+      ctx.stroke();
+      mouse.lastX = mouse.x; mouse.lastY = mouse.y;
+    }
+
+    if (effect === 'cursor-ring') {
+      ctx.beginPath();
+      ctx.arc(mouse.x, mouse.y, 20, 0, Math.PI * 2);
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+
+    if (effect === 'dot-trail') {
+      ctx.beginPath();
+      ctx.arc(mouse.x, mouse.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
+    }
+
+    if (effect === 'magnetic') {
+      ctx.beginPath();
+      ctx.moveTo(mouse.x, mouse.y);
+      ctx.lineTo(width / 2, height / 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.stroke();
+    }
+
+    if (effect === 'ghost') {
+      if (!mouse.ghostX) { mouse.ghostX = mouse.x; mouse.ghostY = mouse.y; }
+      mouse.ghostX += (mouse.x - mouse.ghostX) * 0.1;
+      mouse.ghostY += (mouse.y - mouse.ghostY) * 0.1;
+      ctx.fillStyle = 'rgba(255,255,255,0.3)';
+      ctx.beginPath(); ctx.arc(mouse.ghostX, mouse.ghostY, 8, 0, Math.PI * 2); ctx.fill();
+    }
+
+    particles.forEach((p, i) => {
+      p.life -= 0.02;
+      if (p.life <= 0) { particles.splice(i, 1); return; }
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.gravity) p.vy += p.gravity;
+
+      ctx.globalAlpha = p.life;
+      ctx.fillStyle = p.color;
+
+      if (p.type === 'star') {
+        ctx.font = `${p.size}px serif`;
+        ctx.fillText('⭐', p.x, p.y);
+      } else if (p.type === 'heart') {
+        ctx.font = `${p.size}px serif`;
+        ctx.fillText('❤️', p.x, p.y);
+      } else if (p.type === 'orb') {
+        const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.size);
+        grad.addColorStop(0, p.color);
+        grad.addColorStop(1, 'transparent');
+        ctx.fillStyle = grad;
+        ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2); ctx.fill();
+      } else if (p.type === 'ripple') {
+        ctx.strokeStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, (1 - p.life) * 50, 0, Math.PI * 2);
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
 async function load() {
   const slug = window.__PROFILE_SLUG__ || (() => { const m = window.location.pathname.match(/\/c\/([^/]+)/); return m ? m[1] : new URLSearchParams(location.search).get('u'); })();
   if (!slug) {
@@ -210,6 +385,10 @@ async function load() {
   const container = document.getElementById('cardContainer');
   container.appendChild(card);
   document.title = `${displayName} — Card.lol`;
+
+  // Apply cursor and effects
+  applyCursor(p.customCursor);
+  initCursorEffects(p.cursorEffect);
 
   // Apply page background
   const profilePage = document.querySelector('.profile-page');

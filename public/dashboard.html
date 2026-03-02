@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Settings — Card.lol</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Sans:wght@400;500;600&family=Syne:wght@600;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Sans:wght@400;500;600&family=Syne:wght@600;700&family=Space+Mono:wght@400;700&family=Playfair+Display:wght@400;600;700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
   <div class="dashboard">
     <aside class="dashboard-left">
@@ -32,6 +36,7 @@
         <button class="tab" data-tab="advanced">Advanced</button>
         <button class="tab" data-tab="preview">Preview</button>
         <button class="tab" data-tab="music">Music</button>
+        <button class="tab" data-tab="cursors">Cursors</button>
         <button class="tab" data-tab="link">Share</button>
       </nav>
 
@@ -43,7 +48,8 @@
           </div>
           <div class="field">
             <label>Description</label>
-            <textarea id="description" class="input input-textarea" placeholder="Tell people about yourself..." rows="3"></textarea>
+            <textarea id="description" class="input input-textarea" placeholder="Tell people about yourself..."
+              rows="3"></textarea>
           </div>
           <div class="field">
             <label>Profile Picture</label>
@@ -84,7 +90,8 @@
           <p class="panel-desc">Your custom URL to share. Leave blank to use your username.</p>
           <div class="field">
             <label>Custom link</label>
-            <input type="text" id="customLink" placeholder="my-cool-link" class="input" pattern="[a-zA-Z0-9\-]*" maxlength="30">
+            <input type="text" id="customLink" placeholder="my-cool-link" class="input" pattern="[a-zA-Z0-9\-]*"
+              maxlength="30">
             <span class="field-hint">Letters, numbers, hyphens only • 2–30 chars</span>
           </div>
           <div class="field">
@@ -201,7 +208,8 @@
           </div>
           <div class="field">
             <label>Preview Description</label>
-            <textarea id="previewDescription" class="input input-textarea" placeholder="Description in embed" rows="2"></textarea>
+            <textarea id="previewDescription" class="input input-textarea" placeholder="Description in embed"
+              rows="2"></textarea>
           </div>
         </div>
 
@@ -215,6 +223,67 @@
               <span class="upload-label" id="musicLabel">Click to upload MP3</span>
               <span class="upload-hint">Plays when visitor clicks to enter • 10MB max</span>
             </div>
+          </div>
+        </div>
+
+        <div id="panel-cursors" class="tab-panel">
+          <p class="panel-desc">Customize your mouse pointer and add interactive effects.</p>
+          <div class="field">
+            <label>Custom Cursor</label>
+            <select id="customCursor">
+              <option value="default">Default</option>
+              <option value="crosshair">Crosshair</option>
+              <option value="pointer">Pointer</option>
+              <option value="wait">Wait</option>
+              <option value="text">Text</option>
+              <option value="move">Move</option>
+              <option value="help">Help</option>
+              <option value="none">Hidden</option>
+              <option value="emoji-sparkle">✨ Sparkle</option>
+              <option value="emoji-heart">❤️ Heart</option>
+              <option value="emoji-fire">🔥 Fire</option>
+              <option value="emoji-star">⭐ Star</option>
+              <option value="emoji-ghost">👻 Ghost</option>
+              <option value="emoji-skull">💀 Skull</option>
+              <option value="emoji-crown">👑 Crown</option>
+              <option value="emoji-money">💸 Money</option>
+              <option value="emoji-alien">👽 Alien</option>
+              <option value="emoji-cat">🐱 Cat</option>
+              <option value="emoji-dog">🐶 Dog</option>
+              <option value="emoji-pizza">🍕 Pizza</option>
+              <option value="emoji-rocket">🚀 Rocket</option>
+              <option value="emoji-cloud">☁️ Cloud</option>
+              <option value="emoji-moon">🌙 Moon</option>
+              <option value="emoji-gem">💎 Gem</option>
+              <option value="emoji-butterfly">🦋 Butterfly</option>
+              <option value="emoji-rose">🌹 Rose</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Cursor Effect</label>
+            <select id="cursorEffect">
+              <option value="none">None</option>
+              <option value="trail">Simple Trail</option>
+              <option value="sparkles">Sparkles</option>
+              <option value="bubbles">Bubbles</option>
+              <option value="ghost">Ghost Follow</option>
+              <option value="smoke">Smoke Trail</option>
+              <option value="rainbow">Rainbow Path</option>
+              <option value="ripple">Water Ripple</option>
+              <option value="stars">Star Shower</option>
+              <option value="hearts">Heart Burst</option>
+              <option value="snow">Snowflakes</option>
+              <option value="fire">Fire Trail</option>
+              <option value="magnetic">Magnetic Field</option>
+              <option value="pixel">Pixel Trail</option>
+              <option value="confetti">Confetti</option>
+              <option value="glitch">Glitch Effect</option>
+              <option value="cursor-ring">Cursor Ring</option>
+              <option value="dot-trail">Dot Trail</option>
+              <option value="velocity">Velocity Swirl</option>
+              <option value="energy">Energy Orbs</option>
+              <option value="matrix">Matrix Rain</option>
+            </select>
           </div>
         </div>
 
@@ -429,4 +498,5 @@
   </div>
   <script src="dashboard.js"></script>
 </body>
+
 </html>

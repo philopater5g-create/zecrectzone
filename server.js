@@ -140,6 +140,8 @@ const defaultProfile = {
   gradientStart: '#0f0f11', gradientEnd: '#1a1a1a', gradientAngle: 135,
   // Meta
   previewTitle: '', previewDescription: '', previewImage: '', customLink: '', musicUrl: '',
+  // Cursors
+  cursorEffect: 'none', customCursor: 'default',
 };
 
 async function findUserBySlug(slug) {
@@ -274,13 +276,13 @@ async function handleUpload(req, res) {
 
     const timestamp = Date.now();
     const filename = `${req.user.username}/${req.file.fieldname}-${timestamp}.${ext}`;
-    
+
     // Check if we're in production (Vercel)
     if (isProd) {
       // On Vercel, we MUST use Blob storage
       if (!process.env.BLOB_READ_WRITE_TOKEN) {
-        return res.status(500).json({ 
-          error: 'Upload storage not configured. Please add BLOB_READ_WRITE_TOKEN to Vercel environment variables. Go to Settings → Storage → Connect Store (Blob) in your Vercel dashboard.' 
+        return res.status(500).json({
+          error: 'Upload storage not configured. Please add BLOB_READ_WRITE_TOKEN to Vercel environment variables. Go to Settings → Storage → Connect Store (Blob) in your Vercel dashboard.'
         });
       }
       const blob = await put(filename, req.file.buffer, {

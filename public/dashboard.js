@@ -83,6 +83,8 @@ function getProfile() {
     previewImage: previewImg || '',
     customLink: (getValue('customLink', '') || '').trim().toLowerCase().replace(/\s/g, '').replace(/^\-+|\-+$/g, ''),
     musicUrl: getValue('musicUrl', '')?.trim() || '',
+    customCursor: getValue('customCursor', 'default'),
+    cursorEffect: getValue('cursorEffect', 'none'),
   };
 }
 
@@ -139,6 +141,7 @@ function applyProfile(p) {
   set('gradientAngle', p.gradientAngle ?? 135); setCheck('bgGradient', p.bgGradient);
   // Meta
   set('previewTitle', p.previewTitle); set('previewDescription', p.previewDescription);
+  set('customCursor', p.customCursor || 'default'); set('cursorEffect', p.cursorEffect || 'none');
   updateRangeLabels();
 
   setUploadZoneDisplay('pfp', p.pfp && p.pfp !== PFG_DEFAULT ? fullUrl(p.pfp) : '');
@@ -294,6 +297,18 @@ function renderPreview() {
     backdrop-filter: ${p.blurBg ? 'blur(12px)' : 'none'};
     filter: ${filterStr};
   `;
+
+  // Apply cursor to the preview area
+  const rightSide = document.querySelector('.dashboard-right');
+  if (rightSide) {
+    if (p.customCursor && p.customCursor.startsWith('emoji-')) {
+      const emoji = document.querySelector(`#customCursor option[value="${p.customCursor}"]`)?.textContent.split(' ')[0] || '✨';
+      rightSide.style.cursor = `url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' style='font-size:24px'><text y='24'>${emoji}</text></svg>") 16 16, auto`;
+    } else {
+      rightSide.style.cursor = p.customCursor || 'default';
+    }
+  }
+
   card.classList.toggle('switch-pfp', p.switchPfpOnHover);
   card.classList.toggle('glow-on-hover', p.glowOnHover);
 
@@ -456,7 +471,9 @@ document.getElementById('copyLinkBtn')?.addEventListener('click', () => {
     // Layout
     'cardWidth', 'cardPadding', 'elementSpacing', 'linkStyle',
     // Gradients
-    'gradientStart', 'gradientStartText', 'gradientEnd', 'gradientEndText', 'gradientAngle', 'bgGradient'
+    'gradientStart', 'gradientStartText', 'gradientEnd', 'gradientEndText', 'gradientAngle', 'bgGradient',
+    // Cursors
+    'customCursor', 'cursorEffect'
   ].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', debouncePreview), el.addEventListener('change', debouncePreview);
