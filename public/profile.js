@@ -188,7 +188,14 @@ function playMusic(musicUrl) {
   document.body.appendChild(audio);
 }
 
-// CURSOR_PRESETS is now loaded from cursor-presets.js
+const CURSOR_SCALE = 24;
+
+function scaleCursor(url, hotspot) {
+  const [hx, hy] = hotspot || [0, 0];
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='${CURSOR_SCALE}' height='${CURSOR_SCALE}' viewBox='0 0 32 32'><image href='${url}' width='32' height='32'/></svg>`;
+  const scaledHotspot = [Math.round(hx * CURSOR_SCALE / 32), Math.round(hy * CURSOR_SCALE / 32)];
+  return `url("data:image/svg+xml;base64,${btoa(svg)}") ${scaledHotspot[0]} ${scaledHotspot[1]}, auto`;
+}
 
 let cursorInterval = null;
 function applyCursor(cursor, target = document.body) {
@@ -205,12 +212,12 @@ function applyCursor(cursor, target = document.body) {
     if (typeof preset === 'string') {
       cursorVal = `url("${preset}") 16 16, auto`;
     } else if (preset.type === 'cur') {
-      cursorVal = `url("${preset.data}") ${preset.hotspot[0]} ${preset.hotspot[1]}, auto`;
+      cursorVal = scaleCursor(preset.data, preset.hotspot);
     } else if (preset.type === 'ani' && preset.frames) {
       let frame = 0;
       const updateFrame = () => {
         const f = preset.frames[frame];
-        const val = `url("${f}") ${preset.hotspot[0]} ${preset.hotspot[1]}, auto`;
+        const val = scaleCursor(f, preset.hotspot);
         target.style.cursor = val;
         const styleTag = document.getElementById('custom-cursor-style');
         if (styleTag) styleTag.textContent = `
