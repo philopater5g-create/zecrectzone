@@ -3,6 +3,7 @@
 let cursorInterval = null;
 function applyCursor(cursor, target = document.body) {
   if (cursorInterval) { clearInterval(cursorInterval); cursorInterval = null; }
+
   let cursorVal = 'default';
   const preset = window.CURSOR_PRESETS ? window.CURSOR_PRESETS[cursor] : null;
 
@@ -20,7 +21,17 @@ function applyCursor(cursor, target = document.body) {
       let frame = 0;
       const updateFrame = () => {
         const f = preset.frames[frame];
-        target.style.cursor = `url("${f}") ${preset.hotspot[0]} ${preset.hotspot[1]}, auto`;
+        const val = `url("${f}") ${preset.hotspot[0]} ${preset.hotspot[1]}, auto`;
+        target.style.cursor = val;
+
+        let styleTag = document.getElementById('custom-cursor-style');
+        if (!styleTag) {
+          styleTag = document.createElement('style');
+          styleTag.id = 'custom-cursor-style';
+          document.head.appendChild(styleTag);
+        }
+        styleTag.textContent = `body, .profile-card, * { cursor: ${val} !important; } a, button, .link, [role="button"], .upload-zone, .tab { cursor: pointer !important; }`;
+
         frame = (frame + 1) % preset.frames.length;
       };
       updateFrame();
@@ -30,7 +41,16 @@ function applyCursor(cursor, target = document.body) {
   } else if (cursor && cursor !== 'default') {
     cursorVal = cursor;
   }
+
   target.style.cursor = cursorVal;
+
+  let styleTag = document.getElementById('custom-cursor-style');
+  if (!styleTag) {
+    styleTag = document.createElement('style');
+    styleTag.id = 'custom-cursor-style';
+    document.head.appendChild(styleTag);
+  }
+  styleTag.textContent = `body, .profile-card, * { cursor: ${cursorVal} !important; } a, button, .link, [role="button"], .upload-zone, .tab { cursor: pointer !important; }`;
 }
 
 window.initCursorEffects = function (effect, container = document.body) {
@@ -414,18 +434,7 @@ function escapeHtml(s) {
   return d.innerHTML;
 }
 
-function applyCursor(cursor, target = document.body) {
-  if (!cursor || cursor === 'default') { target.style.cursor = 'default'; return; }
-  if (cursor === 'none') { target.style.cursor = 'none'; return; }
-  if (cursor === 'url') {
-    const url = document.getElementById('customCursorUrl')?.value;
-    if (url) target.style.cursor = `url("${fullUrl(url)}"), auto`;
-    else target.style.cursor = 'default';
-    return;
-  }
-  if (CURSOR_PRESETS[cursor]) { target.style.cursor = `url("${CURSOR_PRESETS[cursor]}") 16 16, auto`; }
-  else { target.style.cursor = cursor; }
-}
+
 
 function renderPreview() {
   const p = getProfile();
