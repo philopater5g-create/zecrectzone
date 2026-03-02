@@ -224,11 +224,30 @@ function applyCursor(cursor, target = document.body) {
     target.style.cursor = 'none';
     return;
   }
+  if (cursor === 'url') {
+    const url = window.__CUSTOM_CURSOR_URL__;
+    if (url) target.style.cursor = `url("${fullUrl(url)}"), auto`;
+    else target.style.cursor = 'default';
+    return;
+  }
   if (CURSOR_PRESETS[cursor]) {
     target.style.cursor = `url("${CURSOR_PRESETS[cursor]}") 16 16, auto`;
   } else {
     target.style.cursor = cursor;
   }
+
+  // Inject global style to override common elements if it's a custom pointer
+  let styleTag = document.getElementById('custom-cursor-style');
+  if (!styleTag) {
+    styleTag = document.createElement('style');
+    styleTag.id = 'custom-cursor-style';
+    document.head.appendChild(styleTag);
+  }
+  const cursorVal = target.style.cursor;
+  styleTag.textContent = `
+    .profile-page, .gate-overlay, body { cursor: ${cursorVal} !important; }
+    a, button, .link, [role="button"] { cursor: pointer !important; }
+  `;
 }
 
 window.initCursorEffects = function (effect, container = document.body) {
@@ -263,9 +282,14 @@ window.initCursorEffects = function (effect, container = document.body) {
   resize();
 
   const moveHandler = e => {
-    const rect = container.getBoundingClientRect();
-    mouse.x = e.clientX - rect.left;
-    mouse.y = e.clientY - rect.top;
+    if (canvas.style.position === 'fixed') {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+    } else {
+      const rect = container.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    }
 
     if (effect === 'trail') createTrail(mouse.x, mouse.y);
     if (effect === 'sparkles') createSparkle(mouse.x, mouse.y);
@@ -413,6 +437,7 @@ async function load() {
   document.title = `${displayName} — Card.lol`;
 
   // Apply cursor and effects
+  window.__CUSTOM_CURSOR_URL__ = p.customCursorUrl;
   applyCursor(p.customCursor);
   initCursorEffects(p.cursorEffect);
 

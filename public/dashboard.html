@@ -229,10 +229,13 @@
         <div id="panel-cursors" class="tab-panel">
           <p class="panel-desc">Customize your mouse pointer and add interactive effects.</p>
           <div class="field">
-            <label>Custom Cursor</label>
+            <label>Custom Cursor Preset</label>
             <select id="customCursor">
-              <option value="default">Default</option>
-              <option value="none">Hidden</option>
+              <optgroup label="Default & Custom">
+                <option value="default">Default Pointer</option>
+                <option value="url">Custom Image URL →</option>
+                <option value="none">Hidden</option>
+              </optgroup>
               <optgroup label="Gaming">
                 <option value="img-aim">🎯 Aim Crosshair</option>
                 <option value="img-sword">⚔️ Diamond Sword</option>
@@ -261,16 +264,15 @@
                 <option value="img-bat">🦇 Night Bat</option>
                 <option value="img-scythe">⛏️ Death Scythe</option>
               </optgroup>
-              <optgroup label="Other">
-                <option value="img-crown">👑 Royal Crown</option>
-                <option value="img-money">💸 Cash Bag</option>
-                <option value="img-alien">👽 Neon Alien</option>
-                <option value="img-rocket">🚀 Space Rocket</option>
-              </optgroup>
             </select>
           </div>
+          <div id="field-customCursorUrl" class="field" style="display:none">
+            <label>Custom Cursor URL (Image/SVG)</label>
+            <input type="text" id="customCursorUrl" class="input" placeholder="https://example.com/cursor.png">
+            <span class="field-hint">Transparent PNG or SVG recommended (max 32x32).</span>
+          </div>
           <div class="field">
-            <label>Cursor Effect</label>
+            <label>Interactive Cursor Effect</label>
             <select id="cursorEffect">
               <option value="none">None</option>
               <option value="trail">Simple Trail</option>

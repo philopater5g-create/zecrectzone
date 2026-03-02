@@ -141,7 +141,7 @@ const defaultProfile = {
   // Meta
   previewTitle: '', previewDescription: '', previewImage: '', customLink: '', musicUrl: '',
   // Cursors
-  cursorEffect: 'none', customCursor: 'default',
+  cursorEffect: 'none', customCursor: 'default', customCursorUrl: '',
 };
 
 async function findUserBySlug(slug) {

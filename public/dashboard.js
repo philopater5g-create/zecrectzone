@@ -28,6 +28,12 @@ const CURSOR_PRESETS = {
 function applyCursor(cursor, target = document.body) {
   if (!cursor || cursor === 'default') { target.style.cursor = 'default'; return; }
   if (cursor === 'none') { target.style.cursor = 'none'; return; }
+  if (cursor === 'url') {
+    const url = document.getElementById('customCursorUrl')?.value;
+    if (url) target.style.cursor = `url("${url}"), auto`;
+    else target.style.cursor = 'default';
+    return;
+  }
   if (CURSOR_PRESETS[cursor]) { target.style.cursor = `url("${CURSOR_PRESETS[cursor]}") 16 16, auto`; }
   else { target.style.cursor = cursor; }
 }
@@ -236,53 +242,84 @@ function getLinks() {
 }
 
 function applyProfile(p) {
+  if (!p) return;
   profile = p;
-  const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ''; };
-  const setCheck = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
-  const setColor = (id, textId, v) => { set(id, v); set(textId, v); };
-  // Basic fields
-  set('displayName', p.displayName); set('description', p.description);
-  set('customLink', (p.customLink || '').toLowerCase()); set('musicUrl', p.musicUrl || '');
-  set('pfpShape', p.pfpShape || 'circle');
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  const setCheck = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+
+  setVal('pfpUrl', p.pfp);
+  setVal('pfp2Url', p.pfp2);
+  setVal('bgUrl', p.bgImage);
+  setVal('pageBgUrl', p.pageBgUrl);
+  setVal('previewUrl', p.previewImage);
+  setVal('description', p.description);
+  setVal('accentColor', p.accentColor);
+  setVal('accentColorText', p.accentColor);
+  setVal('bgColor', p.bgColor);
+  setVal('bgColorText', p.bgColor);
+  setVal('gradientStart', p.gradientStart);
+  setVal('gradientStartText', p.gradientStart);
+  setVal('gradientEnd', p.gradientEnd);
+  setVal('gradientEndText', p.gradientEnd);
+  setVal('gradientAngle', p.gradientAngle || 135);
+  setVal('borderColor', p.borderColor);
+  setVal('borderColorText', p.borderColor);
+  setVal('borderOpacity', p.borderOpacity ?? 0.1);
+  setVal('borderOpacityVal', p.borderOpacity ?? 0.1);
+  setVal('borderRadius', p.borderRadius ?? 24);
+  setVal('borderRadiusVal', p.borderRadius ?? 24);
+  setVal('borderWidth', p.borderWidth ?? 1);
+  setVal('borderWidthVal', p.borderWidth ?? 1);
+  setVal('borderStyle', p.borderStyle || 'solid');
+  setCheck('borderGlow', p.borderGlow);
+  setVal('cardWidth', p.cardWidth ?? 340);
+  setVal('cardWidthVal', p.cardWidth ?? 340);
+  setVal('cardPadding', p.cardPadding ?? 32);
+  setVal('cardPaddingVal', p.cardPadding ?? 32);
+  setVal('elementSpacing', p.elementSpacing ?? 16);
+  setVal('elementSpacingVal', p.elementSpacing ?? 16);
+  setVal('textAlign', p.textAlign || 'center');
+  setVal('pfpShape', p.pfpShape || 'circle');
+  setVal('hoverAnimation', p.hoverAnimation || 'none');
+  setVal('cardEntrance', p.cardEntrance || 'none');
+  setVal('entranceDuration', p.entranceDuration ?? 0.6);
+  setVal('entranceDurationVal', p.entranceDuration ?? 0.6);
+  setVal('textAnimation', p.textAnimation || 'none');
+  setVal('cardRotation', p.cardRotation ?? 0);
+  setVal('cardRotationVal', p.cardRotation ?? 0);
+  setVal('cardOpacity', p.cardOpacity ?? 1);
+  setVal('cardOpacityVal', p.cardOpacity ?? 1);
+  setCheck('bgGradient', p.bgGradient);
+  setCheck('blurBg', p.blurBg);
+  setCheck('blurPageBg', p.blurPageBg);
   setCheck('switchPfpOnHover', p.switchPfpOnHover);
-  // Animations
-  set('tiltX', p.tiltX ?? 10); set('tiltY', p.tiltY ?? 10);
-  set('tiltDuration', p.tiltDuration ?? 0.3); set('scaleOnHover', p.scaleOnHover ?? 1.02);
-  setCheck('glowOnHover', p.glowOnHover ?? true);
-  set('hoverAnimation', p.hoverAnimation || 'tilt');
-  set('cardEntrance', p.cardEntrance || 'none'); set('entranceDuration', p.entranceDuration ?? 0.6);
-  set('textAnimation', p.textAnimation || 'none');
-  // Colors
-  setColor('bgColor', 'bgColorText', p.bgColor || '#0f0f11');
-  setColor('pageBgColor', 'pageBgColorText', p.pageBgColor || '#09090b');
-  setColor('accentColor', 'accentColorText', p.accentColor || '#f59e0b');
-  setCheck('blurBg', p.blurBg); setCheck('blurPageBg', p.blurPageBg);
-  set('bgOpacity', p.bgOpacity ?? 1);
-  // Borders
-  setColor('borderColor', 'borderColorText', p.borderColor || '#ffffff');
-  set('borderWidth', p.borderWidth ?? 1); set('borderStyle', p.borderStyle || 'solid');
-  set('borderOpacity', p.borderOpacity ?? 0.1); setCheck('borderGlow', p.borderGlow);
-  set('borderRadius', p.borderRadius ?? 24); set('shadowIntensity', p.shadowIntensity ?? 0.5);
-  // Typography
-  set('fontFamily', p.fontFamily || 'DM Sans'); set('fontSize', p.fontSize ?? 16);
-  set('fontWeight', p.fontWeight || '400'); set('textAlign', p.textAlign || 'center');
-  set('textShadow', p.textShadow ?? 0);
-  // Effects
-  set('cardOpacity', p.cardOpacity ?? 1); set('cardRotation', p.cardRotation ?? 0);
-  set('imgBrightness', p.imgBrightness ?? 100); set('imgContrast', p.imgContrast ?? 100);
-  set('imgSaturation', p.imgSaturation ?? 100);
-  setCheck('grayscaleEffect', p.grayscaleEffect); setCheck('sepiaEffect', p.sepiaEffect);
-  // Layout
-  set('cardWidth', p.cardWidth ?? 340); set('cardPadding', p.cardPadding ?? 32);
-  set('elementSpacing', p.elementSpacing ?? 16); set('linkStyle', p.linkStyle || 'default');
-  // Gradients
-  setColor('gradientStart', 'gradientStartText', p.gradientStart || '#0f0f11');
-  setColor('gradientEnd', 'gradientEndText', p.gradientEnd || '#1a1a1a');
-  set('gradientAngle', p.gradientAngle ?? 135); setCheck('bgGradient', p.bgGradient);
-  // Meta
-  set('previewTitle', p.previewTitle); set('previewDescription', p.previewDescription);
-  set('customCursor', p.customCursor || 'default'); set('cursorEffect', p.cursorEffect || 'none');
-  updateRangeLabels();
+  setCheck('glowOnHover', p.glowOnHover);
+  setCheck('grayscaleEffect', p.grayscaleEffect);
+  setCheck('sepiaEffect', p.sepiaEffect);
+  setVal('imgBrightness', p.imgBrightness ?? 100);
+  setVal('imgBrightnessVal', p.imgBrightness ?? 100);
+  setVal('imgContrast', p.imgContrast ?? 100);
+  setVal('imgContrastVal', p.imgContrast ?? 100);
+  setVal('imgSaturation', p.imgSaturation ?? 100);
+  setVal('imgSaturationVal', p.imgSaturation ?? 100);
+  setVal('tiltX', p.tiltX ?? 10);
+  setVal('tiltY', p.tiltY ?? 10);
+  setVal('scaleOnHover', p.scaleOnHover ?? 1.02);
+  setVal('tiltDuration', p.tiltDuration ?? 0.3);
+  setVal('shadowIntensity', p.shadowIntensity ?? 0.5);
+  setVal('textShadow', p.textShadow ?? 0);
+  setVal('fontSize', p.fontSize ?? 16);
+  setVal('fontWeight', p.fontWeight || '400');
+  setVal('previewTitle', p.previewTitle);
+  setVal('previewDescription', p.previewDescription);
+  setVal('customLink', p.customLink);
+  setVal('musicUrl', p.musicUrl);
+  setVal('cursorEffect', p.cursorEffect || 'none');
+  setVal('customCursor', p.customCursor || 'default');
+  setVal('customCursorUrl', p.customCursorUrl || '');
+
+  const urlField = document.getElementById('field-customCursorUrl');
+  if (urlField) urlField.style.display = p.customCursor === 'url' ? 'block' : 'none';
 
   setUploadZoneDisplay('pfp', p.pfp && p.pfp !== PFG_DEFAULT ? fullUrl(p.pfp) : '');
   setUploadZoneDisplay('pfp2', p.pfp2 ? fullUrl(p.pfp2) : '');
@@ -380,6 +417,19 @@ function escapeHtml(s) {
   const d = document.createElement('div');
   d.textContent = s;
   return d.innerHTML;
+}
+
+function applyCursor(cursor, target = document.body) {
+  if (!cursor || cursor === 'default') { target.style.cursor = 'default'; return; }
+  if (cursor === 'none') { target.style.cursor = 'none'; return; }
+  if (cursor === 'url') {
+    const url = document.getElementById('customCursorUrl')?.value;
+    if (url) target.style.cursor = `url("${fullUrl(url)}"), auto`;
+    else target.style.cursor = 'default';
+    return;
+  }
+  if (CURSOR_PRESETS[cursor]) { target.style.cursor = `url("${CURSOR_PRESETS[cursor]}") 16 16, auto`; }
+  else { target.style.cursor = cursor; }
 }
 
 function renderPreview() {
@@ -612,11 +662,20 @@ document.getElementById('copyLinkBtn')?.addEventListener('click', () => {
     // Gradients
     'gradientStart', 'gradientStartText', 'gradientEnd', 'gradientEndText', 'gradientAngle', 'bgGradient',
     // Cursors
-    'customCursor', 'cursorEffect'
+    'customCursor', 'customCursorUrl', 'cursorEffect'
   ].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.addEventListener('input', debouncePreview), el.addEventListener('change', debouncePreview);
+    if (el) el.addEventListener(el.type === 'checkbox' ? 'change' : 'input', debouncePreview);
   });
+
+  const customCursorSelect = document.getElementById('customCursor');
+  if (customCursorSelect) {
+    customCursorSelect.addEventListener('change', () => {
+      const field = document.getElementById('field-customCursorUrl');
+      if (field) field.style.display = customCursorSelect.value === 'url' ? 'block' : 'none';
+      renderPreview();
+    });
+  }
   document.getElementById('linksContainer')?.addEventListener('input', debouncePreview);
 
   document.getElementById('saveBtn').onclick = async () => {
