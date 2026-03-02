@@ -119,13 +119,27 @@ async function userExists(username) {
 const defaultProfile = {
   displayName: '', description: '', pfp: 'https://api.dicebear.com/7.x/avataaars/svg?seed=default',
   pfp2: '', pfpShape: 'circle', switchPfpOnHover: false, links: [],
+  // Hover/Animation effects
   tiltX: 10, tiltY: 10, tiltDuration: 0.3, scaleOnHover: 1.02, glowOnHover: true,
-  bgColor: '#0f0f11', bgGradient: '', bgImage: '', blurBg: false,
+  hoverAnimation: 'tilt', cardEntrance: 'none', entranceDuration: 0.6, textAnimation: 'none',
+  // Colors and backgrounds
+  bgColor: '#0f0f11', bgGradient: '', bgImage: '', blurBg: false, bgOpacity: 1,
   pageBgUrl: '', pageBgColor: '#09090b', blurPageBg: false,
-  accentColor: '#f59e0b', borderColor: 'rgba(255,255,255,0.1)',
-  borderRadius: 24, shadowIntensity: 0.5, fontFamily: 'DM Sans',
-  previewTitle: '', previewDescription: '', previewImage: '',
-  customLink: '', musicUrl: '',
+  accentColor: '#f59e0b',
+  // Borders
+  borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderStyle: 'solid', borderOpacity: 0.1, borderGlow: false,
+  borderRadius: 24, shadowIntensity: 0.5,
+  // Typography
+  fontFamily: 'DM Sans', fontSize: 16, fontWeight: '400', textAlign: 'center', textShadow: 0,
+  // Effects
+  cardOpacity: 1, cardRotation: 0, imgBrightness: 100, imgContrast: 100, imgSaturation: 100,
+  grayscaleEffect: false, sepiaEffect: false,
+  // Layout
+  cardWidth: 340, cardPadding: 32, elementSpacing: 16, linkStyle: 'default',
+  // Gradients
+  gradientStart: '#0f0f11', gradientEnd: '#1a1a1a', gradientAngle: 135,
+  // Meta
+  previewTitle: '', previewDescription: '', previewImage: '', customLink: '', musicUrl: '',
 };
 
 async function findUserBySlug(slug) {

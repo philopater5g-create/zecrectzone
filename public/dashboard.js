@@ -15,35 +15,74 @@ function getProfile() {
   const bg = document.getElementById('bgUrl')?.value?.trim();
   const pageBg = document.getElementById('pageBgUrl')?.value?.trim();
   const previewImg = document.getElementById('previewUrl')?.value?.trim();
+  const getValue = (id, def) => document.getElementById(id)?.value ?? def;
+  const getNum = (id, def) => +document.getElementById(id)?.value ?? def;
+  const getCheck = (id, def) => document.getElementById(id)?.checked ?? def;
   return {
-    displayName: (document.getElementById('displayName')?.value || '').trim(),
-    description: (document.getElementById('description')?.value || '').trim(),
+    displayName: (getValue('displayName', '') || '').trim(),
+    description: (getValue('description', '') || '').trim(),
     pfp: pfp || PFG_DEFAULT,
     pfp2: pfp2 || '',
-    switchPfpOnHover: document.getElementById('switchPfpOnHover')?.checked ?? false,
-    pfpShape: document.getElementById('pfpShape')?.value || 'circle',
-    tiltX: +document.getElementById('tiltX')?.value ?? 10,
-    tiltY: +document.getElementById('tiltY')?.value ?? 10,
-    tiltDuration: +document.getElementById('tiltDuration')?.value ?? 0.3,
-    scaleOnHover: +document.getElementById('scaleOnHover')?.value ?? 1.02,
-    glowOnHover: document.getElementById('glowOnHover')?.checked ?? true,
-    bgColor: document.getElementById('bgColor')?.value || '#0f0f11',
+    switchPfpOnHover: getCheck('switchPfpOnHover', false),
+    pfpShape: getValue('pfpShape', 'circle'),
+    // Animations
+    tiltX: getNum('tiltX', 10),
+    tiltY: getNum('tiltY', 10),
+    tiltDuration: getNum('tiltDuration', 0.3),
+    scaleOnHover: getNum('scaleOnHover', 1.02),
+    glowOnHover: getCheck('glowOnHover', true),
+    hoverAnimation: getValue('hoverAnimation', 'tilt'),
+    cardEntrance: getValue('cardEntrance', 'none'),
+    entranceDuration: getNum('entranceDuration', 0.6),
+    textAnimation: getValue('textAnimation', 'none'),
+    // Colors
+    bgColor: getValue('bgColor', '#0f0f11'),
     bgImage: bg || '',
-    blurBg: document.getElementById('blurBg')?.checked ?? false,
+    blurBg: getCheck('blurBg', false),
+    bgOpacity: getNum('bgOpacity', 1),
     pageBgUrl: pageBg || '',
-    pageBgColor: document.getElementById('pageBgColor')?.value || '#09090b',
-    blurPageBg: document.getElementById('blurPageBg')?.checked ?? false,
-    accentColor: document.getElementById('accentColor')?.value || '#f59e0b',
-    borderColor: 'rgba(255,255,255,0.1)',
-    borderRadius: +document.getElementById('borderRadius')?.value ?? 24,
-    shadowIntensity: +document.getElementById('shadowIntensity')?.value ?? 0.5,
-    fontFamily: document.getElementById('fontFamily')?.value || 'DM Sans',
+    pageBgColor: getValue('pageBgColor', '#09090b'),
+    blurPageBg: getCheck('blurPageBg', false),
+    accentColor: getValue('accentColor', '#f59e0b'),
+    // Borders
+    borderColor: getValue('borderColor', '#ffffff'),
+    borderWidth: getNum('borderWidth', 1),
+    borderStyle: getValue('borderStyle', 'solid'),
+    borderOpacity: getNum('borderOpacity', 0.1),
+    borderGlow: getCheck('borderGlow', false),
+    borderRadius: getNum('borderRadius', 24),
+    shadowIntensity: getNum('shadowIntensity', 0.5),
+    // Typography
+    fontFamily: getValue('fontFamily', 'DM Sans'),
+    fontSize: getNum('fontSize', 16),
+    fontWeight: getValue('fontWeight', '400'),
+    textAlign: getValue('textAlign', 'center'),
+    textShadow: getNum('textShadow', 0),
+    // Effects
+    cardOpacity: getNum('cardOpacity', 1),
+    cardRotation: getNum('cardRotation', 0),
+    imgBrightness: getNum('imgBrightness', 100),
+    imgContrast: getNum('imgContrast', 100),
+    imgSaturation: getNum('imgSaturation', 100),
+    grayscaleEffect: getCheck('grayscaleEffect', false),
+    sepiaEffect: getCheck('sepiaEffect', false),
+    // Layout
+    cardWidth: getNum('cardWidth', 340),
+    cardPadding: getNum('cardPadding', 32),
+    elementSpacing: getNum('elementSpacing', 16),
+    linkStyle: getValue('linkStyle', 'default'),
+    // Gradients
+    gradientStart: getValue('gradientStart', '#0f0f11'),
+    gradientEnd: getValue('gradientEnd', '#1a1a1a'),
+    gradientAngle: getNum('gradientAngle', 135),
+    bgGradient: getCheck('bgGradient', false),
+    // Meta
     links: getLinks(),
-    previewTitle: (document.getElementById('previewTitle')?.value || '').trim(),
-    previewDescription: (document.getElementById('previewDescription')?.value || '').trim(),
+    previewTitle: (getValue('previewTitle', '') || '').trim(),
+    previewDescription: (getValue('previewDescription', '') || '').trim(),
     previewImage: previewImg || '',
-    customLink: (document.getElementById('customLink')?.value || '').trim().toLowerCase().replace(/\s/g, '').replace(/^\-+|\-+$/g, ''),
-    musicUrl: document.getElementById('musicUrl')?.value?.trim() || '',
+    customLink: (getValue('customLink', '') || '').trim().toLowerCase().replace(/\s/g, '').replace(/^\-+|\-+$/g, ''),
+    musicUrl: getValue('musicUrl', '')?.trim() || '',
   };
 }
 
