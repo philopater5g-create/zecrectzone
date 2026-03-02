@@ -188,7 +188,7 @@ function playMusic(musicUrl) {
   document.body.appendChild(audio);
 }
 
-const CURSOR_SCALE = 24;
+const CURSOR_SCALE = 32;
 
 function scaleCursor(url, hotspot) {
   const [hx, hy] = hotspot || [0, 0];

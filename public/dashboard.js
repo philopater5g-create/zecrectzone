@@ -1,6 +1,6 @@
 // CURSOR_PRESETS is now loaded from cursor-presets.js
 
-const CURSOR_SCALE = 24;
+const CURSOR_SCALE = 32;
 
 function scaleCursor(url, hotspot) {
   const [hx, hy] = hotspot || [0, 0];
