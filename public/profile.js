@@ -188,41 +188,41 @@ function playMusic(musicUrl) {
   document.body.appendChild(audio);
 }
 
-const CURSOR_PRESETS = {
-  "img-aim": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIxNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJyZWQiIHN0cm9rZS13aWR0aD0iMiIvPjxsaW5lIHgxPSIxNiIgeTE9IjIiIHgyPSIxNiIgeTI9IjMwIiBzdHJva2U9InJlZCIgc3Ryb2tlLXdpZHRoPSIyIi8+PGxpbmUgeDE9IjIiIHkxPSIxNiIgeDI9IjMwIiB5Mj0iMTYiIHN0cm9rZT0icmVkIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=",
-  "img-sword": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMjggNGwtNC00LTE4IDE4LTIgNiA2LTJ6IiBmaWxsPSJjeWFuIiBzdHJva2U9ImJsYWNrIi8+PHBhdGggZD0iTTQgMjhsNCA0IDQtNC00LTR6IiBmaWxsPSJicm93biIgc3Ryb2tlPSJibGFjayIvPjwvc3ZnPg==",
-  "img-pickaxe": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMiAybDI4IDI4IiBzdHJva2U9ImJyb3duIiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMiAzMGMwLTEwIDEwLTIwIDI4LTI4bC04IDI4Yy0xMC04LTIwLTEwLTIwIDAiIGZpbGw9ImdyYXkiIHN0cm9rZT0iYmxhY2siLz48L3N2Zz4=",
-  "img-trident": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMTYgMzJWOG0tOCA0VjRtMTYgOFY0bS0xNiA4YzAgNCAxNiA0IDE2IDAiIHN0cm9rZT0iZ29sZCIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJub25lIi8+PC9zdmc+",
-  "img-potion": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMjAgMzBIOHUtMi0yMGgtOHoiIGZpbGw9InB1cnBsZSIgc3Ryb2tlPSJ3aGl0ZSIvPjxwYXRoIGQ9Ik0xNCAxMFY0aDR2NiIgc3Ryb2tlPSJ3aGl0ZSIgZmlsbD0ibm9uZSIvPjwvc3ZnPg==",
-  "img-sparkle": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMTYgMmwyIDEwIDEwIDItMTAgMi0yIDEwLTItMTAtMTAtMiAxMC0yeiIgZmlsbD0id2hpdGUiIHN0cm9rZT0iY3lhbiIvPjwvc3ZnPg==",
-  "img-heart": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMTYgMjhzLTEyLTgtMTItMTZhOCA4IDAgMCAxIDE2IDAgOCA4IDAgMCAxIDE2IDBjMCA4LTEyIDE2LTEyIDE2eiIgZmlsbD0icGluayIgc3Ryb2tlPSJkZWVwcGluayIvPjwvc3ZnPg==",
-  "img-star": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMTYgMmw0IDEwaDEwbC04IDYgMyAxMS05LTctOSA3IDMtMTEtOC02aDEweiIgZmlsbD0iZ29sZCIgc3Ryb2tlPSJvcmFuZ2UiLz48L3N2Zz4=",
-  "img-butterfly": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMTYgMTZjNC04IDEyLTggMTIgMHMtOCA4LTEyIDAtMTIgOC0xMiAwIDgtOCAxMiAwIiBmaWxsPSJza3libHVlIiBzdHJva2U9ImJsdWUiLz48L3N2Zz4=",
-  "img-rose": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjEyIiByPSI4IiBmaWxsPSJyZWQiLz48cGF0aCBkPSJNMTYgMjB2MTAiIHN0cm9rZT0iZ3JlZW4iIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==",
-  "img-arrow": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNNCA0bDIwIDEwLTEwIDItMiAxMHoiIGZpbGw9IndoaXRlIiBzdHJva2U9ImJsYWNrIi8+PC9zdmc+",
-  "img-dot": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSI2IiBmaWxsPSJyZWQiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg==",
-  "img-ring": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSIxMCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJjeWFuIiBzdHJva2Utd2lkdGg9IjIiLz48Y2lyY2xlIGN4PSIxNiIgY3k9IjE2IiByPSI0IiBmaWxsPSJjeWFuIi8+PC9zdmc+",
-  "img-glitch": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cmVjdCB4PSI0IiB5PSI0IiB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIGZpbGw9ImxpbWUiIG9wYWNpdHk9IjAuNSIvPjxyZWN0IHg9IjgiIHk9IjgiIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCIgZmlsbD0ibWFnZW50YSIgb3BhY2l0eT0iMC41Ii8+PC9zdmc+",
-  "img-matrix": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48dGV4dCB4PSI4IiB5PSIyNCIgZmlsbD0ibGltZSIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC13ZWlnaHQ9ImJvbGQiPjAxPC90ZXh0Pjwvc3ZnPg==",
-  "img-skull": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMTYgNGMtNiAwLTEwIDQtMTAgMTAgMCA0IDIgOCA2IDEwdjRoOHYtNGM0LTIgNi02IDYtMTAgMC02LTQtMTAtMTAtMTB6IiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJibGFjayIvPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTQiIHI9IjIiIGZpbGw9ImJsYWNrIi8+PGNpcmNsZSBjeD0iMjAiIGN5PSIxNCIgcj0iMiIgZmlsbD0iYmxhY2siLz48L3N2Zz4=",
-  "img-ghost": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNNiAzMGMwLTEwIDQtMjYgMTAtMjZzMTAgMTYgMTAgMjZjLTItMi00LTItNSAwcy0zIDItNSAwLTMtMi01IDAtMyAyLTUgMCIgZmlsbD0id2hpdGUiIG9wYWNpdHk9IjAuOCIvPjxjaXJjbGUgY3g9IjEyIiBjeT0iMTQiIHI9IjEuNSIgZmlsbD0iYmxhY2siLz48Y2lyY2xlIGN4PSIyMCIgY3k9IjE0IiByPSIxLjUiIGZpbGw9ImJsYWNrIi8+PC9zdmc+",
-  "img-blade": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNNCAyOGwyNC0yNCIgc3Ryb2tlPSJncmF5IiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNNCAyOGw0IDQgNC00LTQtNHoiIGZpbGw9ImJsYWNrIi8+PC9zdmc+",
-  "img-bat": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMTYgMTJjLTQtNC0xMi00LTEyIDRzOCA0IDEyIDAgOCA0IDEyIDAtOC04LTEyLTQiIGZpbGw9ImJsYWNrIi8+PC9zdmc+",
-  "img-scythe": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNOCAzMGwxNi0yNCIgc3Ryb2tlPSJicm93biIgc3Ryb2tlLXdpZHRoPSIyIi8+PHBhdGggZD0iTTI0IDZjLTEwIDAtMjAgNC0yMCAxMiAxMC00IDIwLTQgMjAtMTIiIGZpbGw9InNpbHZlciIgc3Ryb2tlPSJibGFjayIvPjwvc3ZnPg==",
-  "img-crown": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNNCAyNGw0LTEyIDggOCA4LTggNCAxMnoiIGZpbGw9ImdvbGQiIHN0cm9rZT0ib3JhbmdlIi8+PC9zdmc+",
-  "img-money": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cmVjdCB4PSI0IiB5PSIxMCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjEyIiByeD0iMiIgZmlsbD0ibGlnaHRncmVlbiIgc3Ryb2tlPSJkYXJrZ3JlZW4iLz48dGV4dCB4PSIxMiIgeT0iMTkiIGZpbGw9ImRhcmtncmVlbiIgZm9udC1zaXplPSIxMCI+JDwvdGV4dD48L3N2Zz4=",
-  "img-alien": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMTYgNGMtNiAwLTEwIDYtMTAgMTIgMCA4IDQgMTIgMTAgMTJzMTAtNCAxMC0xMmMwLTYtNC0xMi0xMC0xMnoiIGZpbGw9ImxpbWUiLz48ZWxsaXBzZSBjeD0iMTIiIGN5PSIxNCIgcng9IjMiIHJ5PSI1IiBmaWxsPSJibGFjayIvPjxlbGxpcHNlIGN4PSIyMCIgY3k9IjE0IiByeD0iMyIgcnk9IjUiIGZpbGw9ImJsYWNrIi8+PC9zdmc+",
-  "img-rocket": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMiIgaGVpZ2h0PSIzMiIgdmlld0JveD0iMCAwIDMyIDMyIj48cGF0aCBkPSJNMTYgNHMtNiAxMC02IDIwaDEyYzAtMTAtNi0yMC02LTIweiIgZmlsbD0id2hpdGUiIHN0cm9rZT0icmVkIi8+PHBhdGggZD0iTTEwIDI0bC00IDR2NGw0LTRNMjIgMjRsNCA0djRsLTQtNCIgc3Ryb2tlPSJyZWQiIGZpbGw9Im5vbmUiLz48L3N2Zz4="
-};
+// CURSOR_PRESETS is now loaded from cursor-presets.js
 
+let cursorInterval = null;
 function applyCursor(cursor, target = document.body) {
+  if (cursorInterval) { clearInterval(cursorInterval); cursorInterval = null; }
+
   let cursorVal = 'default';
+  const preset = window.CURSOR_PRESETS ? window.CURSOR_PRESETS[cursor] : null;
+
   if (cursor === 'none') {
     cursorVal = 'none';
   } else if (cursor === 'url' && window.__CUSTOM_CURSOR_URL__) {
     cursorVal = `url("${fullUrl(window.__CUSTOM_CURSOR_URL__)}"), auto`;
-  } else if (CURSOR_PRESETS[cursor]) {
-    cursorVal = `url("${CURSOR_PRESETS[cursor]}") 16 16, auto`;
+  } else if (preset) {
+    if (typeof preset === 'string') {
+      cursorVal = `url("${preset}") 16 16, auto`;
+    } else if (preset.type === 'cur') {
+      cursorVal = `url("${preset.data}") ${preset.hotspot[0]} ${preset.hotspot[1]}, auto`;
+    } else if (preset.type === 'ani' && preset.frames) {
+      let frame = 0;
+      const updateFrame = () => {
+        const f = preset.frames[frame];
+        const val = `url("${f}") ${preset.hotspot[0]} ${preset.hotspot[1]}, auto`;
+        target.style.cursor = val;
+        const styleTag = document.getElementById('custom-cursor-style');
+        if (styleTag) styleTag.textContent = `
+          .profile-page, .gate-overlay, body { cursor: ${val} !important; }
+          a, button, .link, [role="button"] { cursor: pointer; }
+        `;
+        frame = (frame + 1) % preset.frames.length;
+      };
+      updateFrame();
+      cursorInterval = setInterval(updateFrame, preset.rate || 100);
+      return;
+    }
   } else if (cursor && cursor !== 'default') {
     cursorVal = cursor;
   }
