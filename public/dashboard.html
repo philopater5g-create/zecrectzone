@@ -21,14 +21,18 @@
 
       <nav class="tabs">
         <button class="tab active" data-tab="profile">Profile</button>
-        <button class="tab" data-tab="link">Link</button>
         <button class="tab" data-tab="links">Links</button>
-        <button class="tab" data-tab="hover">Hover</button>
-        <button class="tab" data-tab="appearance">Appearance</button>
-        <button class="tab" data-tab="mainbg">Main Background</button>
-        <button class="tab" data-tab="typography">Typography</button>
-        <button class="tab" data-tab="preview">Discord Preview</button>
+        <button class="tab" data-tab="appearance">Style</button>
+        <button class="tab" data-tab="effects">Effects</button>
+        <button class="tab" data-tab="animations">Animations</button>
+        <button class="tab" data-tab="borders">Borders</button>
+        <button class="tab" data-tab="mainbg">Page BG</button>
+        <button class="tab" data-tab="typography">Text</button>
+        <button class="tab" data-tab="layout">Layout</button>
+        <button class="tab" data-tab="advanced">Advanced</button>
+        <button class="tab" data-tab="preview">Preview</button>
         <button class="tab" data-tab="music">Music</button>
+        <button class="tab" data-tab="link">Share</button>
       </nav>
 
       <div class="tab-panels">
@@ -98,29 +102,6 @@
         <div id="panel-links" class="tab-panel">
           <div id="linksContainer" class="links-list"></div>
           <button type="button" id="addLinkBtn" class="btn btn-outline">+ Add Link</button>
-        </div>
-
-        <div id="panel-hover" class="tab-panel">
-          <div class="field">
-            <label>Tilt X <span id="tiltXVal">10</span>°</label>
-            <input type="range" id="tiltX" min="-30" max="30" value="10">
-          </div>
-          <div class="field">
-            <label>Tilt Y <span id="tiltYVal">10</span>°</label>
-            <input type="range" id="tiltY" min="-30" max="30" value="10">
-          </div>
-          <div class="field">
-            <label>Duration <span id="tiltDurationVal">0.3</span>s</label>
-            <input type="range" id="tiltDuration" min="0.1" max="2" step="0.1" value="0.3">
-          </div>
-          <div class="field">
-            <label>Scale <span id="scaleVal">1.02</span>×</label>
-            <input type="range" id="scaleOnHover" min="1" max="1.2" step="0.01" value="1.02">
-          </div>
-          <div class="field field-row">
-            <label>Glow on hover</label>
-            <input type="checkbox" id="glowOnHover" checked>
-          </div>
         </div>
 
         <div id="panel-appearance" class="tab-panel">
@@ -234,6 +215,202 @@
               <span class="upload-label" id="musicLabel">Click to upload MP3</span>
               <span class="upload-hint">Plays when visitor clicks to enter • 10MB max</span>
             </div>
+          </div>
+        </div>
+
+        <div id="panel-effects" class="tab-panel">
+          <div class="field">
+            <label>Card Opacity <span id="cardOpacityVal">1</span></label>
+            <input type="range" id="cardOpacity" min="0" max="1" step="0.05" value="1">
+          </div>
+          <div class="field">
+            <label>Card Rotation <span id="cardRotationVal">0</span>°</label>
+            <input type="range" id="cardRotation" min="-15" max="15" step="1" value="0">
+          </div>
+          <div class="field">
+            <label>Image Brightness <span id="imgBrightnessVal">100</span>%</label>
+            <input type="range" id="imgBrightness" min="50" max="150" step="5" value="100">
+          </div>
+          <div class="field">
+            <label>Image Contrast <span id="imgContrastVal">100</span>%</label>
+            <input type="range" id="imgContrast" min="50" max="150" step="5" value="100">
+          </div>
+          <div class="field">
+            <label>Image Saturation <span id="imgSaturationVal">100</span>%</label>
+            <input type="range" id="imgSaturation" min="0" max="200" step="10" value="100">
+          </div>
+          <div class="field field-row">
+            <label>Grayscale Effect</label>
+            <input type="checkbox" id="grayscaleEffect">
+          </div>
+          <div class="field field-row">
+            <label>Sepia Effect</label>
+            <input type="checkbox" id="sepiaEffect">
+          </div>
+          <div class="field">
+            <label>Text Shadow Intensity <span id="textShadowVal">0</span></label>
+            <input type="range" id="textShadow" min="0" max="10" step="1" value="0">
+          </div>
+        </div>
+
+        <div id="panel-animations" class="tab-panel">
+          <div class="field">
+            <label>Card Entrance</label>
+            <select id="cardEntrance">
+              <option value="none">None</option>
+              <option value="fade">Fade In</option>
+              <option value="slide-up">Slide Up</option>
+              <option value="slide-down">Slide Down</option>
+              <option value="zoom">Zoom In</option>
+              <option value="bounce">Bounce</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Entrance Duration <span id="entranceDurationVal">0.6</span>s</label>
+            <input type="range" id="entranceDuration" min="0.2" max="2" step="0.1" value="0.6">
+          </div>
+          <div class="field">
+            <label>Text Animation</label>
+            <select id="textAnimation">
+              <option value="none">None</option>
+              <option value="fade">Fade In</option>
+              <option value="slide">Slide In</option>
+              <option value="glow">Glow Pulse</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Hover Animation</label>
+            <select id="hoverAnimation">
+              <option value="tilt">Tilt (Default)</option>
+              <option value="lift">Lift Up</option>
+              <option value="bounce">Bounce</option>
+              <option value="shake">Shake</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tilt X <span id="tiltXVal">10</span>°</label>
+            <input type="range" id="tiltX" min="-30" max="30" value="10">
+          </div>
+          <div class="field">
+            <label>Tilt Y <span id="tiltYVal">10</span>°</label>
+            <input type="range" id="tiltY" min="-30" max="30" value="10">
+          </div>
+          <div class="field">
+            <label>Duration <span id="tiltDurationVal">0.3</span>s</label>
+            <input type="range" id="tiltDuration" min="0.1" max="2" step="0.1" value="0.3">
+          </div>
+          <div class="field">
+            <label>Scale <span id="scaleVal">1.02</span>×</label>
+            <input type="range" id="scaleOnHover" min="1" max="1.2" step="0.01" value="1.02">
+          </div>
+          <div class="field field-row">
+            <label>Glow on hover</label>
+            <input type="checkbox" id="glowOnHover" checked>
+          </div>
+        </div>
+
+        <div id="panel-borders" class="tab-panel">
+          <div class="field">
+            <label>Border Width <span id="borderWidthVal">1</span>px</label>
+            <input type="range" id="borderWidth" min="0" max="10" step="1" value="1">
+          </div>
+          <div class="field">
+            <label>Border Style</label>
+            <select id="borderStyle">
+              <option value="solid">Solid</option>
+              <option value="dashed">Dashed</option>
+              <option value="dotted">Dotted</option>
+              <option value="double">Double</option>
+            </select>
+          </div>
+          <div class="field field-row">
+            <label>Border Color</label>
+            <div class="color-input-wrap">
+              <input type="color" id="borderColor" value="#ffffff">
+              <input type="text" id="borderColorText" value="#ffffff" class="input">
+            </div>
+          </div>
+          <div class="field">
+            <label>Border Opacity <span id="borderOpacityVal">0.1</span></label>
+            <input type="range" id="borderOpacity" min="0" max="1" step="0.05" value="0.1">
+          </div>
+          <div class="field field-row">
+            <label>Border Glow</label>
+            <input type="checkbox" id="borderGlow">
+          </div>
+        </div>
+
+        <div id="panel-layout" class="tab-panel">
+          <div class="field">
+            <label>Card Width <span id="cardWidthVal">340</span>px</label>
+            <input type="range" id="cardWidth" min="280" max="500" step="10" value="340">
+          </div>
+          <div class="field">
+            <label>Card Padding <span id="cardPaddingVal">32</span>px</label>
+            <input type="range" id="cardPadding" min="16" max="64" step="4" value="32">
+          </div>
+          <div class="field">
+            <label>Element Spacing <span id="elementSpacingVal">16</span>px</label>
+            <input type="range" id="elementSpacing" min="8" max="32" step="2" value="16">
+          </div>
+          <div class="field">
+            <label>Text Alignment</label>
+            <select id="textAlign">
+              <option value="center">Center</option>
+              <option value="left">Left</option>
+              <option value="right">Right</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Link Button Style</label>
+            <select id="linkStyle">
+              <option value="default">Default</option>
+              <option value="rounded">Rounded</option>
+              <option value="pill">Pill</option>
+              <option value="sharp">Sharp</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="panel-advanced" class="tab-panel">
+          <div class="field">
+            <label>Background Opacity <span id="bgOpacityVal">1</span></label>
+            <input type="range" id="bgOpacity" min="0" max="1" step="0.05" value="1">
+          </div>
+          <div class="field field-row">
+            <label>Background Gradient</label>
+            <input type="checkbox" id="bgGradient">
+          </div>
+          <div class="field field-row">
+            <label>Gradient Start Color</label>
+            <div class="color-input-wrap">
+              <input type="color" id="gradientStart" value="#0f0f11">
+              <input type="text" id="gradientStartText" value="#0f0f11" class="input">
+            </div>
+          </div>
+          <div class="field field-row">
+            <label>Gradient End Color</label>
+            <div class="color-input-wrap">
+              <input type="color" id="gradientEnd" value="#1a1a1a">
+              <input type="text" id="gradientEndText" value="#1a1a1a" class="input">
+            </div>
+          </div>
+          <div class="field">
+            <label>Gradient Angle <span id="gradientAngleVal">135</span>°</label>
+            <input type="range" id="gradientAngle" min="0" max="360" step="15" value="135">
+          </div>
+          <div class="field">
+            <label>Font Size <span id="fontSizeVal">16</span>px</label>
+            <input type="range" id="fontSize" min="12" max="24" step="1" value="16">
+          </div>
+          <div class="field">
+            <label>Font Weight</label>
+            <select id="fontWeight">
+              <option value="400">Normal</option>
+              <option value="500">Medium</option>
+              <option value="600">Semi Bold</option>
+              <option value="700">Bold</option>
+            </select>
           </div>
         </div>
       </div>

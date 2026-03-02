@@ -289,6 +289,11 @@ select {
   overflow: hidden;
 }
 
+.profile-card.preview-mode {
+  transform: scale(0.75);
+  transform-origin: top center;
+}
+
 .profile-card.glow-on-hover:hover {
   box-shadow: 0 0 50px var(--card-glow, rgba(245,158,11,0.2));
 }
