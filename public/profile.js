@@ -49,44 +49,93 @@ function escapeHtml(s) {
 
 function buildCard(p, displayName, viewCount) {
   const borderC = p.borderColor || 'rgba(255,255,255,0.1)';
+  const borderColorRgb = hexToRgb(p.borderColor || '#ffffff');
+  const borderColorWithOpacity = `rgba(${borderColorRgb.join(',')}, ${p.borderOpacity ?? 0.1})`;
+
   const glow = p.glowOnHover ? `rgba(${hexToRgb(p.accentColor).join(',')},${(p.shadowIntensity ?? 0.5) * 0.4})` : 'transparent';
   const tx = p.tiltX ?? 10, ty = p.tiltY ?? 10, scale = p.scaleOnHover ?? 1.02;
+
   let bg = p.bgColor || '#0f0f11';
-  if (p.bgGradient) bg = p.bgGradient;
-  else if (p.bgImage) bg = `url(${fullUrl(p.bgImage)}) center/cover`;
+  if (p.bgGradient && p.gradientStart && p.gradientEnd) {
+    bg = `linear-gradient(${p.gradientAngle ?? 135}deg, ${p.gradientStart}, ${p.gradientEnd})`;
+  } else if (p.bgImage) {
+    bg = `url(${fullUrl(p.bgImage)}) center/cover`;
+  }
+
+  // Image filters
+  const imgFilters = [];
+  if (p.grayscaleEffect) imgFilters.push('grayscale(100%)');
+  if (p.sepiaEffect) imgFilters.push('sepia(100%)');
+  if (p.imgBrightness !== 100) imgFilters.push(`brightness(${p.imgBrightness ?? 100}%)`);
+  if (p.imgContrast !== 100) imgFilters.push(`contrast(${p.imgContrast ?? 100}%)`);
+  if (p.imgSaturation !== 100) imgFilters.push(`saturate(${p.imgSaturation ?? 100}%)`);
+  const filterStr = imgFilters.length ? imgFilters.join(' ') : 'none';
+  const textShadowStr = (p.textShadow ?? 0) > 0 ? `0 2px ${(p.textShadow ?? 0) * 2}px rgba(0,0,0,0.5)` : 'none';
 
   const card = document.createElement('div');
   card.className = 'profile-card' + (p.switchPfpOnHover ? ' switch-pfp' : '') + (p.glowOnHover ? ' glow-on-hover' : '');
+
+  // Hover Animation Class
+  if (p.hoverAnimation === 'lift') card.classList.add('hover-lift');
+  else if (p.hoverAnimation === 'bounce') card.classList.add('hover-bounce');
+  else if (p.hoverAnimation === 'shake') card.classList.add('hover-shake');
+
   card.style.cssText = `
     --card-glow: ${glow};
+    --scale: ${scale};
     background: ${bg};
-    border-color: ${borderC};
+    border: ${p.borderWidth ?? 1}px ${p.borderStyle ?? 'solid'} ${borderColorWithOpacity};
     border-radius: ${p.borderRadius ?? 24}px;
-    transition: transform ${p.tiltDuration ?? 0.3}s ease, box-shadow ${p.tiltDuration ?? 0.3}s ease;
+    width: ${p.cardWidth ?? 340}px;
+    padding: ${p.cardPadding ?? 32}px;
+    opacity: ${p.cardOpacity ?? 1};
+    transform: rotate(${p.cardRotation ?? 0}deg);
+    transition: transform ${p.tiltDuration ?? 0.3}s ease, box-shadow ${p.tiltDuration ?? 0.3}s ease, opacity 0.3s ease;
     font-family: '${p.fontFamily || 'DM Sans'}', sans-serif;
-    box-shadow: 0 25px 50px -12px rgba(0,0,0,${0.3 + (p.shadowIntensity ?? 0.5) * 0.2});
+    font-size: ${p.fontSize ?? 16}px;
+    font-weight: ${p.fontWeight ?? '400'};
+    text-align: ${p.textAlign ?? 'center'};
+    text-shadow: ${textShadowStr};
+    box-shadow: 0 20px 40px -12px rgba(0,0,0,${0.3 + (p.shadowIntensity ?? 0.5) * 0.2})${p.borderGlow ? `, 0 0 20px ${p.accentColor}` : ''};
     backdrop-filter: ${p.blurBg ? 'blur(12px)' : 'none'};
+    filter: ${filterStr};
   `;
+
+  // Entrance Animation
+  if (p.cardEntrance && p.cardEntrance !== 'none') {
+    card.classList.add('animate-' + p.cardEntrance);
+    card.style.setProperty('--dur', (p.entranceDuration ?? 0.6) + 's');
+  }
+
+  const pfpUrl = p.pfp ? fullUrl(p.pfp) : PFG_DEFAULT;
+  const pfp2Url = p.pfp2 ? fullUrl(p.pfp2) : '';
+
+  const textAnimClass = p.textAnimation && p.textAnimation !== 'none' ? `text-animate-${p.textAnimation}` : '';
+
   card.innerHTML = `
     <div class="pfp-container">
-      ${pfpHtml(p.pfp, p.pfpShape, PFG_DEFAULT)}
-      ${pfpHoverHtml(p.pfp2, p.pfpShape)}
+      ${pfpHtml(pfpUrl, p.pfpShape, PFG_DEFAULT)}
+      ${pfpHoverHtml(pfp2Url, p.pfpShape)}
     </div>
-    <div class="display-name" style="color:inherit">${escapeHtml(displayName)}</div>
-    <div class="description" style="color:inherit;opacity:0.8">${escapeHtml(p.description || '')}</div>
-    ${viewCount > 0 ? `<div class="profile-views">${viewCount.toLocaleString()} view${viewCount === 1 ? '' : 's'}</div>` : ''}
-    <div class="links">
+    <div class="display-name ${textAnimClass}" style="color:inherit">${escapeHtml(displayName)}</div>
+    <div class="description ${textAnimClass}" style="color:inherit;opacity:0.8">${escapeHtml(p.description || '')}</div>
+    ${viewCount > 0 ? `<div class="profile-views ${textAnimClass}">${viewCount.toLocaleString()} view${viewCount === 1 ? '' : 's'}</div>` : ''}
+    <div class="links ${textAnimClass}" style="gap:${p.elementSpacing ?? 16}px">
       ${(p.links || []).map(l => `
-        <a href="${escapeHtml(l.url)}" class="link" target="_blank" rel="noopener" style="--accent:${p.accentColor || '#f59e0b'}">${escapeHtml(l.title || 'Link')}</a>
+        <a href="${escapeHtml(l.url)}" class="link style-${p.linkStyle ?? 'default'}" target="_blank" rel="noopener" style="--accent:${p.accentColor || '#f59e0b'}">${escapeHtml(l.title || 'Link')}</a>
       `).join('')}
     </div>
   `;
-  card.onmouseenter = () => {
-    card.style.transform = `perspective(1000px) rotateX(${ty}deg) rotateY(${tx}deg) scale(${scale})`;
-  };
-  card.onmouseleave = () => {
-    card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
-  };
+
+  if (p.hoverAnimation === 'tilt' || !p.hoverAnimation) {
+    card.onmouseenter = () => {
+      card.style.transform = `perspective(1000px) rotateX(${ty}deg) rotateY(${tx}deg) scale(${scale}) rotate(${p.cardRotation ?? 0}deg)`;
+    };
+    card.onmouseleave = () => {
+      card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1) rotate(${p.cardRotation ?? 0}deg)`;
+    };
+  }
+
   return card;
 }
 
@@ -135,7 +184,7 @@ function playMusic(musicUrl) {
   audio.src = src;
   audio.loop = true;
   audio.volume = 0.6;
-  audio.play().catch(() => {});
+  audio.play().catch(() => { });
   document.body.appendChild(audio);
 }
 
@@ -164,27 +213,29 @@ async function load() {
 
   // Apply page background
   const profilePage = document.querySelector('.profile-page');
-  if (profilePage && p.pageBgUrl) {
-    const pageBgFull = fullUrl(p.pageBgUrl);
-    if (isVideoUrl(pageBgFull)) {
-      const video = document.createElement('video');
-      video.autoplay = true;
-      video.muted = true;
-      video.loop = true;
-      video.playsInline = true;
-      video.src = pageBgFull;
-      video.style.cssText = 'position: fixed; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: -1;';
-      if (p.blurPageBg) video.style.filter = 'blur(12px)';
-      document.body.insertBefore(video, document.body.firstChild);
-    } else {
-      profilePage.style.backgroundImage = `url(${pageBgFull})`;
-      profilePage.style.backgroundSize = 'cover';
-      profilePage.style.backgroundPosition = 'center';
-      profilePage.style.backgroundAttachment = 'fixed';
-      if (p.blurPageBg) profilePage.style.filter = 'blur(12px)';
+  if (profilePage) {
+    if (p.pageBgUrl) {
+      const pageBgFull = fullUrl(p.pageBgUrl);
+      if (isVideoUrl(pageBgFull)) {
+        const video = document.createElement('video');
+        video.className = 'bg-video';
+        video.autoplay = true;
+        video.muted = true;
+        video.loop = true;
+        video.playsInline = true;
+        video.src = pageBgFull;
+        if (p.blurPageBg) video.style.filter = 'blur(12px)';
+        document.body.insertBefore(video, document.body.firstChild);
+      } else {
+        profilePage.style.backgroundImage = `url(${pageBgFull})`;
+        profilePage.style.backgroundSize = 'cover';
+        profilePage.style.backgroundPosition = 'center';
+        profilePage.style.backgroundAttachment = 'fixed';
+        if (p.blurPageBg) profilePage.style.filter = 'blur(12px)';
+      }
+    } else if (p.pageBgColor) {
+      profilePage.style.backgroundColor = p.pageBgColor;
     }
-  } else if (profilePage && p.pageBgColor) {
-    profilePage.style.backgroundColor = p.pageBgColor;
   }
 
   const alreadyEntered = sessionStorage.getItem('profile_entered_' + slug);

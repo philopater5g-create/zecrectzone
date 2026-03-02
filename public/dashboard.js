@@ -97,30 +97,48 @@ function applyProfile(p) {
   profile = p;
   const set = (id, v) => { const el = document.getElementById(id); if (el) el.value = v ?? ''; };
   const setCheck = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
-  set('displayName', p.displayName);
-  set('description', p.description);
-  set('previewTitle', p.previewTitle);
-  set('previewDescription', p.previewDescription);
-  set('customLink', (p.customLink || '').toLowerCase());
-  set('musicUrl', p.musicUrl || '');
+  const setColor = (id, textId, v) => { set(id, v); set(textId, v); };
+  // Basic fields
+  set('displayName', p.displayName); set('description', p.description);
+  set('customLink', (p.customLink || '').toLowerCase()); set('musicUrl', p.musicUrl || '');
+  set('pfpShape', p.pfpShape || 'circle');
   setCheck('switchPfpOnHover', p.switchPfpOnHover);
+  // Animations
+  set('tiltX', p.tiltX ?? 10); set('tiltY', p.tiltY ?? 10);
+  set('tiltDuration', p.tiltDuration ?? 0.3); set('scaleOnHover', p.scaleOnHover ?? 1.02);
   setCheck('glowOnHover', p.glowOnHover ?? true);
-  setCheck('blurBg', p.blurBg);
-  setCheck('blurPageBg', p.blurPageBg);
-  document.getElementById('pfpShape').value = p.pfpShape || 'circle';
-  document.getElementById('tiltX').value = p.tiltX ?? 10;
-  document.getElementById('tiltY').value = p.tiltY ?? 10;
-  document.getElementById('tiltDuration').value = p.tiltDuration ?? 0.3;
-  document.getElementById('scaleOnHover').value = p.scaleOnHover ?? 1.02;
-  document.getElementById('bgColor').value = p.bgColor || '#0f0f11';
-  document.getElementById('bgColorText').value = p.bgColor || '#0f0f11';
-  document.getElementById('pageBgColor').value = p.pageBgColor || '#09090b';
-  document.getElementById('pageBgColorText').value = p.pageBgColor || '#09090b';
-  document.getElementById('accentColor').value = p.accentColor || '#f59e0b';
-  document.getElementById('accentColorText').value = p.accentColor || '#f59e0b';
-  document.getElementById('borderRadius').value = p.borderRadius ?? 24;
-  document.getElementById('shadowIntensity').value = p.shadowIntensity ?? 0.5;
-  document.getElementById('fontFamily').value = p.fontFamily || 'DM Sans';
+  set('hoverAnimation', p.hoverAnimation || 'tilt');
+  set('cardEntrance', p.cardEntrance || 'none'); set('entranceDuration', p.entranceDuration ?? 0.6);
+  set('textAnimation', p.textAnimation || 'none');
+  // Colors
+  setColor('bgColor', 'bgColorText', p.bgColor || '#0f0f11');
+  setColor('pageBgColor', 'pageBgColorText', p.pageBgColor || '#09090b');
+  setColor('accentColor', 'accentColorText', p.accentColor || '#f59e0b');
+  setCheck('blurBg', p.blurBg); setCheck('blurPageBg', p.blurPageBg);
+  set('bgOpacity', p.bgOpacity ?? 1);
+  // Borders
+  setColor('borderColor', 'borderColorText', p.borderColor || '#ffffff');
+  set('borderWidth', p.borderWidth ?? 1); set('borderStyle', p.borderStyle || 'solid');
+  set('borderOpacity', p.borderOpacity ?? 0.1); setCheck('borderGlow', p.borderGlow);
+  set('borderRadius', p.borderRadius ?? 24); set('shadowIntensity', p.shadowIntensity ?? 0.5);
+  // Typography
+  set('fontFamily', p.fontFamily || 'DM Sans'); set('fontSize', p.fontSize ?? 16);
+  set('fontWeight', p.fontWeight || '400'); set('textAlign', p.textAlign || 'center');
+  set('textShadow', p.textShadow ?? 0);
+  // Effects
+  set('cardOpacity', p.cardOpacity ?? 1); set('cardRotation', p.cardRotation ?? 0);
+  set('imgBrightness', p.imgBrightness ?? 100); set('imgContrast', p.imgContrast ?? 100);
+  set('imgSaturation', p.imgSaturation ?? 100);
+  setCheck('grayscaleEffect', p.grayscaleEffect); setCheck('sepiaEffect', p.sepiaEffect);
+  // Layout
+  set('cardWidth', p.cardWidth ?? 340); set('cardPadding', p.cardPadding ?? 32);
+  set('elementSpacing', p.elementSpacing ?? 16); set('linkStyle', p.linkStyle || 'default');
+  // Gradients
+  setColor('gradientStart', 'gradientStartText', p.gradientStart || '#0f0f11');
+  setColor('gradientEnd', 'gradientEndText', p.gradientEnd || '#1a1a1a');
+  set('gradientAngle', p.gradientAngle ?? 135); setCheck('bgGradient', p.bgGradient);
+  // Meta
+  set('previewTitle', p.previewTitle); set('previewDescription', p.previewDescription);
   updateRangeLabels();
 
   setUploadZoneDisplay('pfp', p.pfp && p.pfp !== PFG_DEFAULT ? fullUrl(p.pfp) : '');
@@ -152,7 +170,7 @@ function updateLinkTab() {
 }
 
 function setUploadZoneDisplay(name, displayUrl) {
-  const map = { pfp: ['pfpZone','pfpPreview','pfpUrl'], pfp2: ['pfp2Zone','pfp2Preview','pfp2Url'], bg: ['bgZone','bgPreview','bgUrl'], pagebg: ['pageBgZone','pageBgPreview','pageBgUrl'], preview: ['previewZone','previewImagePreview','previewUrl'] };
+  const map = { pfp: ['pfpZone', 'pfpPreview', 'pfpUrl'], pfp2: ['pfp2Zone', 'pfp2Preview', 'pfp2Url'], bg: ['bgZone', 'bgPreview', 'bgUrl'], pagebg: ['pageBgZone', 'pageBgPreview', 'pageBgUrl'], preview: ['previewZone', 'previewImagePreview', 'previewUrl'] };
   const [zoneId, previewId, urlId] = map[name] || [];
   const zone = document.getElementById(zoneId);
   const preview = document.getElementById(previewId);
@@ -173,8 +191,14 @@ function setUploadZoneDisplay(name, displayUrl) {
 
 function updateRangeLabels() {
   const r = (id, labelId) => { const v = document.getElementById(id)?.value; const l = document.getElementById(labelId); if (l) l.textContent = v; };
-  r('tiltX','tiltXVal'); r('tiltY','tiltYVal'); r('tiltDuration','tiltDurationVal'); r('scaleOnHover','scaleVal');
-  r('borderRadius','radiusVal'); r('shadowIntensity','shadowVal');
+  r('tiltX', 'tiltXVal'); r('tiltY', 'tiltYVal'); r('tiltDuration', 'tiltDurationVal'); r('scaleOnHover', 'scaleVal');
+  r('borderRadius', 'radiusVal'); r('shadowIntensity', 'shadowVal');
+  r('cardOpacity', 'cardOpacityVal'); r('cardRotation', 'cardRotationVal');
+  r('imgBrightness', 'imgBrightnessVal'); r('imgContrast', 'imgContrastVal'); r('imgSaturation', 'imgSaturationVal');
+  r('textShadow', 'textShadowVal'); r('entranceDuration', 'entranceDurationVal');
+  r('borderWidth', 'borderWidthVal'); r('borderOpacity', 'borderOpacityVal');
+  r('cardWidth', 'cardWidthVal'); r('cardPadding', 'cardPaddingVal'); r('elementSpacing', 'elementSpacingVal');
+  r('bgOpacity', 'bgOpacityVal'); r('gradientAngle', 'gradientAngleVal'); r('fontSize', 'fontSizeVal');
 }
 
 function pfpRadius(shape) {
@@ -220,42 +244,88 @@ function renderPreview() {
   const card = document.getElementById('previewCard');
   if (!card) return;
 
+  // Background (with gradient support)
   let bg = p.bgColor || '#0f0f11';
-  if (p.bgImage) bg = `url(${fullUrl(p.bgImage)}) center/cover`;
-  const glow = p.glowOnHover ? `rgba(${hexToRgb(p.accentColor).join(',')},${(p.shadowIntensity || 0.5) * 0.4})` : 'transparent';
+  if (p.bgGradient && p.gradientStart && p.gradientEnd) {
+    bg = `linear-gradient(${p.gradientAngle ?? 135}deg, ${p.gradientStart}, ${p.gradientEnd})`;
+  } else if (p.bgImage) {
+    bg = `url(${fullUrl(p.bgImage)}) center/cover`;
+  }
+
+  // Border with opacity
+  const borderColorRgb = hexToRgb(p.borderColor || '#ffffff');
+  const borderColorWithOpacity = `rgba(${borderColorRgb.join(',')}, ${p.borderOpacity ?? 0.1})`;
+
+  // Image filters
+  const imgFilters = [];
+  if (p.grayscaleEffect) imgFilters.push('grayscale(100%)');
+  if (p.sepiaEffect) imgFilters.push('sepia(100%)');
+  if (p.imgBrightness !== 100) imgFilters.push(`brightness(${p.imgBrightness ?? 100}%)`);
+  if (p.imgContrast !== 100) imgFilters.push(`contrast(${p.imgContrast ?? 100}%)`);
+  if (p.imgSaturation !== 100) imgFilters.push(`saturate(${p.imgSaturation ?? 100}%)`);
+  const filterStr = imgFilters.length ? imgFilters.join(' ') : 'none';
+
+  const glow = p.glowOnHover ? `rgba(${hexToRgb(p.accentColor).join(',')},${(p.shadowIntensity ?? 0.5) * 0.4})` : 'transparent';
+  const textShadowStr = (p.textShadow ?? 0) > 0 ? `0 2px ${(p.textShadow ?? 0) * 2}px rgba(0,0,0,0.5)` : 'none';
+
+  // Hover Animation Class
+  card.classList.remove('hover-lift', 'hover-bounce', 'hover-shake');
+  if (p.hoverAnimation === 'lift') card.classList.add('hover-lift');
+  else if (p.hoverAnimation === 'bounce') card.classList.add('hover-bounce');
+  else if (p.hoverAnimation === 'shake') card.classList.add('hover-shake');
 
   card.style.cssText = `
     --card-glow: ${glow};
+    --scale: ${p.scaleOnHover ?? 1.02};
     background: ${bg};
-    border-color: rgba(255,255,255,0.1);
+    border: ${p.borderWidth}px ${p.borderStyle} ${borderColorWithOpacity};
     border-radius: ${p.borderRadius}px;
-    transition: transform ${p.tiltDuration}s ease, box-shadow ${p.tiltDuration}s ease;
+    width: ${p.cardWidth}px;
+    padding: ${p.cardPadding}px;
+    opacity: ${p.cardOpacity};
+    transform: rotate(${p.cardRotation}deg);
+    transition: transform ${p.tiltDuration}s ease, box-shadow ${p.tiltDuration}s ease, opacity 0.3s ease;
     font-family: '${p.fontFamily}', sans-serif;
-    box-shadow: 0 20px 40px -12px rgba(0,0,0,${0.3 + (p.shadowIntensity || 0.5) * 0.2});
+    font-size: ${p.fontSize}px;
+    font-weight: ${p.fontWeight};
+    text-align: ${p.textAlign};
+    text-shadow: ${textShadowStr};
+    box-shadow: 0 20px 40px -12px rgba(0,0,0,${0.3 + (p.shadowIntensity || 0.5) * 0.2})${p.borderGlow ? `, 0 0 20px ${p.accentColor}` : ''};
     backdrop-filter: ${p.blurBg ? 'blur(12px)' : 'none'};
+    filter: ${filterStr};
   `;
   card.classList.toggle('switch-pfp', p.switchPfpOnHover);
   card.classList.toggle('glow-on-hover', p.glowOnHover);
 
   const pfpUrl = p.pfp ? fullUrl(p.pfp) : PFG_DEFAULT;
   const pfp2Url = p.pfp2 ? fullUrl(p.pfp2) : '';
+  const textAnimClass = p.textAnimation && p.textAnimation !== 'none' ? `text-animate-${p.textAnimation}` : '';
+
   card.innerHTML = `
     <div class="pfp-container">
       ${pfpHtml(pfpUrl, p.pfpShape, PFG_DEFAULT)}
       ${pfpHoverHtml(pfp2Url, p.pfpShape)}
     </div>
-    <div class="display-name">${escapeHtml(p.displayName || user?.username || 'Your Name')}</div>
-    <div class="description">${escapeHtml(p.description || 'Your bio goes here...')}</div>
-    <div class="links">
-      ${(p.links || []).slice(0, 5).map(l => `<a href="${escapeHtml(l.url)}" class="link" target="_blank" rel="noopener" style="--accent:${p.accentColor}">${escapeHtml(l.title || 'Link')}</a>`).join('')}
+    <div class="display-name ${textAnimClass}">${escapeHtml(p.displayName || user?.username || 'Your Name')}</div>
+    <div class="description ${textAnimClass}">${escapeHtml(p.description || 'Your bio goes here...')}</div>
+    <div class="links ${textAnimClass}" style="gap:${p.elementSpacing ?? 16}px">
+      ${(p.links || []).slice(0, 5).map(l => `<a href="${escapeHtml(l.url)}" class="link style-${p.linkStyle ?? 'default'}" target="_blank" rel="noopener" style="--accent:${p.accentColor}">${escapeHtml(l.title || 'Link')}</a>`).join('')}
       ${!p.links?.length ? '<span class="link" style="opacity:0.5">Add links →</span>' : ''}
     </div>
   `;
-  card.onmouseenter = () => {
-    const tx = p.tiltX || 0, ty = p.tiltY || 0, scale = p.scaleOnHover || 1.02;
-    card.style.transform = `perspective(1000px) rotateX(${ty}deg) rotateY(${tx}deg) scale(${scale})`;
-  };
-  card.onmouseleave = () => { card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)'; };
+
+  if (p.hoverAnimation === 'tilt' || !p.hoverAnimation) {
+    card.onmouseenter = () => {
+      const tx = p.tiltX || 0, ty = p.tiltY || 0, scale = p.scaleOnHover || 1.02;
+      card.style.transform = `perspective(1000px) rotateX(${ty}deg) rotateY(${tx}deg) scale(${scale}) rotate(${p.cardRotation ?? 0}deg)`;
+    };
+    card.onmouseleave = () => {
+      card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1) rotate(${p.cardRotation ?? 0}deg)`;
+    };
+  } else {
+    card.onmouseenter = null;
+    card.onmouseleave = null;
+  }
 }
 
 function renderLinks(links) {
@@ -309,13 +379,13 @@ function setupUpload(zoneId, inputId, endpoint, field, urlId, onSuccess) {
     try {
       const url = await uploadFile(endpoint, file, field);
       document.getElementById(urlId).value = url;
-      if (urlId !== 'musicUrl') setUploadZoneDisplay(urlId.replace('Url',''), getBaseUrl() + url);
-      if (onSuccess) onSuccess(); else setUploadZoneDisplay(urlId.replace('Url',''), getBaseUrl() + url);
+      if (urlId !== 'musicUrl') setUploadZoneDisplay(urlId.replace('Url', ''), getBaseUrl() + url);
+      if (onSuccess) onSuccess(); else setUploadZoneDisplay(urlId.replace('Url', ''), getBaseUrl() + url);
       debouncePreview();
       input.value = '';
-    } catch (e) { 
+    } catch (e) {
       console.error('Upload error:', e);
-      alert('Upload failed: ' + e.message); 
+      alert('Upload failed: ' + e.message);
     }
   };
 }
@@ -359,18 +429,35 @@ document.getElementById('copyLinkBtn')?.addEventListener('click', () => {
 
   document.getElementById('addLinkBtn').onclick = () => { addLinkRow(); debouncePreview(); };
 
-  setupUpload('pfpZone','pfpInput','/api/upload/pfp','pfp','pfpUrl');
-  setupUpload('pfp2Zone','pfp2Input','/api/upload/pfp2','pfp2','pfp2Url');
-  setupUpload('bgZone','bgInput','/api/upload/bg','bg','bgUrl');
-  setupUpload('pageBgZone','pageBgInput','/api/upload/pagebg','pagebg','pageBgUrl');
-  setupUpload('previewZone','previewInput','/api/upload/preview','preview','previewUrl');
-  setupUpload('musicZone','musicInput','/api/upload/music','music','musicUrl', () => {
+  setupUpload('pfpZone', 'pfpInput', '/api/upload/pfp', 'pfp', 'pfpUrl');
+  setupUpload('pfp2Zone', 'pfp2Input', '/api/upload/pfp2', 'pfp2', 'pfp2Url');
+  setupUpload('bgZone', 'bgInput', '/api/upload/bg', 'bg', 'bgUrl');
+  setupUpload('pageBgZone', 'pageBgInput', '/api/upload/pagebg', 'pagebg', 'pageBgUrl');
+  setupUpload('previewZone', 'previewInput', '/api/upload/preview', 'preview', 'previewUrl');
+  setupUpload('musicZone', 'musicInput', '/api/upload/music', 'music', 'musicUrl', () => {
     const mz = document.getElementById('musicZone');
     const ml = document.getElementById('musicLabel');
     if (mz && ml) { mz.classList.add('has-file'); ml.textContent = 'Track uploaded'; }
   });
 
-  ['displayName','description','customLink','musicUrl','switchPfpOnHover','pfpShape','tiltX','tiltY','tiltDuration','scaleOnHover','glowOnHover','bgColor','bgColorText','blurBg','pageBgColor','pageBgColorText','blurPageBg','accentColor','accentColorText','borderRadius','shadowIntensity','fontFamily','previewTitle','previewDescription'].forEach(id => {
+  [
+    // Basic
+    'displayName', 'description', 'customLink', 'musicUrl', 'switchPfpOnHover', 'pfpShape', 'previewTitle', 'previewDescription',
+    // Animations  
+    'tiltX', 'tiltY', 'tiltDuration', 'scaleOnHover', 'glowOnHover', 'hoverAnimation', 'cardEntrance', 'entranceDuration', 'textAnimation',
+    // Colors
+    'bgColor', 'bgColorText', 'blurBg', 'bgOpacity', 'pageBgColor', 'pageBgColorText', 'blurPageBg', 'accentColor', 'accentColorText',
+    // Borders
+    'borderColor', 'borderColorText', 'borderWidth', 'borderStyle', 'borderOpacity', 'borderGlow', 'borderRadius', 'shadowIntensity',
+    // Typography
+    'fontFamily', 'fontSize', 'fontWeight', 'textAlign', 'textShadow',
+    // Effects
+    'cardOpacity', 'cardRotation', 'imgBrightness', 'imgContrast', 'imgSaturation', 'grayscaleEffect', 'sepiaEffect',
+    // Layout
+    'cardWidth', 'cardPadding', 'elementSpacing', 'linkStyle',
+    // Gradients
+    'gradientStart', 'gradientStartText', 'gradientEnd', 'gradientEndText', 'gradientAngle', 'bgGradient'
+  ].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.addEventListener('input', debouncePreview), el.addEventListener('change', debouncePreview);
   });
